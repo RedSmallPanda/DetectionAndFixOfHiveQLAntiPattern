@@ -1,0 +1,2 @@
+# DetectionAndFixOfHiveQLAntiPattern
+高级软件工程大作业：HiveQL中的代码反模式检测与修复

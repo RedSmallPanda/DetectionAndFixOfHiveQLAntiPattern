@@ -3,15 +3,18 @@ package myApplication;
 import gen.*;
 import hiveUtils.HiveUtil;
 
+import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
 
 public class MergedListener extends HplsqlBaseListener {
     private int joinNum = 0;
     private List<String> selectItemList;
     private List<Integer> groupByFlag = new ArrayList<>();
     private List<Integer> currentSelectListNum = new ArrayList<>();
+    private HadoopSchema hadoopSchema = new HadoopSchema();
 
     @Override
     public void enterProgram(HplsqlParser.ProgramContext ctx){
@@ -83,6 +86,7 @@ public class MergedListener extends HplsqlBaseListener {
 //                System.out.println("Please put the table containing less records on the left side of join.");
 //            };
         }
+        tableName = ctx.getStop().getText();
     }
 
     @Override
@@ -152,6 +156,7 @@ public class MergedListener extends HplsqlBaseListener {
     //anti-pattern:不要在where字句中进行运算
     @Override
     public void enterWhere_clause(HplsqlParser.Where_clauseContext ctx) {
+        hasWhere = true;
         HplsqlParser.Bool_expr_binaryContext boolBinaryContext;
         if(ctx.bool_expr().T_OPEN_P() == null){
             if(ctx.bool_expr().bool_expr_atom() == null){
@@ -276,6 +281,40 @@ public class MergedListener extends HplsqlBaseListener {
             if(isDouble1 != isDouble2){
                 System.out.println("Be careful! Data type after \"then\" and \"else\" is different!");
             }
+        }
+    }
+
+    // 建多个相同的表
+    HashSet<String> colName = new HashSet<>();
+
+    @Override
+    public void enterCreate_table_columns_item(HplsqlParser.Create_table_columns_itemContext ctx){
+        colName.add(ctx.getStart().getText());
+    }
+
+    @Override
+    public void exitCreate_table_stmt(HplsqlParser.Create_table_stmtContext ctx){
+        if(HiveUtil.hasSameTable(colName)){
+            System.out.println("重复建表！");
+        }
+    }
+
+    // 在有分区的表上没有使用分区查询
+    private boolean hasWhere=false;
+    List<String> whereItemList = new ArrayList<>();
+
+    private String tableName;
+    @Override
+    public void exitSubselect_stmt(HplsqlParser.Subselect_stmtContext ctx){
+        if(!HiveUtil.usePartitionCorrect(tableName, whereItemList)){
+            System.out.println("Be careful! 在有分区的表上没有使用分区查询!");
+        }
+    }
+
+    @Override
+    public void enterBool_expr_atom(HplsqlParser.Bool_expr_atomContext ctx){
+        if(hasWhere){
+            whereItemList.add(ctx.getStart().getText());
         }
     }
 

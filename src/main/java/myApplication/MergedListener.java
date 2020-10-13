@@ -1,6 +1,7 @@
 package myApplication;
 
 import gen.*;
+import hiveUtils.HiveUtil;
 
 import java.util.regex.Pattern;
 import java.util.ArrayList;
@@ -67,10 +68,21 @@ public class MergedListener extends HplsqlBaseListener {
         }
     }
 
+    //anti-pattern:条件允许时，没有将条目少的表放在join左侧，条目多的表放在join右侧
     @Override
     public void enterFrom_clause(HplsqlParser.From_clauseContext ctx) {
 //        //重置join个数
 //        joinNum = 0;
+        if(ctx.from_join_clause().size() != 0) {
+            String tableName1 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
+            String tableName2 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
+//            HiveTable table1 = new HiveTable(tableName1);
+//            HiveTable table2 = new HiveTable(tableName2);
+
+//            if(HiveUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
+//                System.out.println("Please put the table containing less records on the left side of join.");
+//            };
+        }
     }
 
     @Override
@@ -85,6 +97,7 @@ public class MergedListener extends HplsqlBaseListener {
 
     //anti-pattern:过多使用join
     //anti-pattern:不要在join子句中进行运算
+    //anti-pattern:将不同数据类型的字段进行join
     @Override
     public void enterFrom_join_clause(HplsqlParser.From_join_clauseContext ctx) {
         //累加join个数
@@ -101,8 +114,16 @@ public class MergedListener extends HplsqlBaseListener {
             else {
                 boolBinaryContext = ctx.bool_expr().bool_expr(0).bool_expr_atom().bool_expr_binary();
             }
+
             HplsqlParser.ExprContext leftSymbol = boolBinaryContext.expr(0);
+            //处理子表达式存在括号的情况
+            if(leftSymbol.getChild(0).getText().equals("(")){
+                leftSymbol = leftSymbol.expr(0);
+            }
             HplsqlParser.ExprContext rightSymbol = boolBinaryContext.expr(1);
+            if(rightSymbol.getChild(0).getText().equals("(")){
+                rightSymbol = rightSymbol.expr(0);
+            }
 
             //判断是否在on后的布尔表达式中使用了函数
             if(leftSymbol.expr_func() == null && leftSymbol.expr_agg_window_func() == null
@@ -119,6 +140,11 @@ public class MergedListener extends HplsqlBaseListener {
                 //什么都不干
             } else {
                 System.out.println("不要在join子句中进行运算");
+            }
+
+            //判断是否将不同数据类型字段进行join
+            if(HiveUtil.compareParamType(leftSymbol.getChild(0).getText(),rightSymbol.getChild(0).getText()) == false){
+                System.out.println("不要将不同数据类型字段进行join");
             }
         }
     }

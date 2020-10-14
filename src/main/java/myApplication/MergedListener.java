@@ -1,9 +1,8 @@
 package myApplication;
 
 import gen.*;
-import hiveUtils.HiveUtil;
+import mysqlUtils.MysqlUtil;
 
-import java.util.Iterator;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,14 +76,12 @@ public class MergedListener extends HplsqlBaseListener {
 //        //重置join个数
 //        joinNum = 0;
         if(ctx.from_join_clause().size() != 0) {
-            String tableName1 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
-            String tableName2 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
-//            HiveTable table1 = new HiveTable(tableName1);
-//            HiveTable table2 = new HiveTable(tableName2);
+            String tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
+            String tableName2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
 
-//            if(HiveUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
-//                System.out.println("Please put the table containing less records on the left side of join.");
-//            };
+            if(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
+                System.out.println("Please put the table containing less records on the left side of join.");
+            };
         }
         tableName = ctx.getStop().getText();
     }
@@ -147,7 +144,7 @@ public class MergedListener extends HplsqlBaseListener {
             }
 
             //判断是否将不同数据类型字段进行join
-            if(HiveUtil.compareParamType(leftSymbol.getChild(0).getText(),rightSymbol.getChild(0).getText()) == false){
+            if(MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(),rightSymbol.getChild(0).getText()) == false){
                 System.out.println("不要将不同数据类型字段进行join");
             }
         }
@@ -294,7 +291,7 @@ public class MergedListener extends HplsqlBaseListener {
 
     @Override
     public void exitCreate_table_stmt(HplsqlParser.Create_table_stmtContext ctx){
-        if(HiveUtil.hasSameTable(colName)){
+        if(MysqlUtil.hasSameTable(colName)){
             System.out.println("重复建表！");
         }
     }
@@ -306,7 +303,7 @@ public class MergedListener extends HplsqlBaseListener {
     private String tableName;
     @Override
     public void exitSubselect_stmt(HplsqlParser.Subselect_stmtContext ctx){
-        if(!HiveUtil.usePartitionCorrect(tableName, whereItemList)){
+        if(!MysqlUtil.usePartitionCorrect(tableName, whereItemList)){
             System.out.println("Be careful! 在有分区的表上没有使用分区查询!");
         }
     }

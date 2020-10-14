@@ -19,7 +19,7 @@ public class MergedTest {
         //String s = "select t3.col1,t3.col2,sum(t3.col1) from (select t1.col1,t2.col2 from t1 join t2 on t1.id = t2.id group by t1.col1) as t3 group by t3.col1,t3.col2;";  // group by不和聚集函数搭配使用
 
         //String s = "CREATE TABLE tableD (bar int, foo float);";  // 建多个相同表
-        String s = "select name from partitiontable where age=22 or city=\"shanghai\";";  // 在有分区的表上没有使用分区查询
+        String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";  // 在有分区的表上没有使用分区查询
 
         //创建输入字节流
         ANTLRInputStream input = new ANTLRInputStream(s);

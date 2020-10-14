@@ -3,6 +3,7 @@ package myApplication;
 import gen.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
+import mysqlUtils.MysqlUtil;
 
 public class MergedTest {
     public static void main(String[] args) throws Exception {
@@ -20,6 +21,7 @@ public class MergedTest {
 
         //String s = "CREATE TABLE tableD (bar int, foo float);";  // 建多个相同表
         String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";  // 在有分区的表上没有使用分区查询
+        //String s = "select name from partitiontable where age=22 or city=\"shanghai\";";  // 在有分区的表上没有使用分区查询
 
         //创建输入字节流
         ANTLRInputStream input = new ANTLRInputStream(s);
@@ -39,5 +41,7 @@ public class MergedTest {
 
         //System.out.println(tree.toStringTree(parser));
 
+
+        MysqlUtil.configurationCheck();
     }
 }

@@ -225,4 +225,81 @@ public class MysqlUtil {
         }
         return false;
     }
+
+    public static void configurationCheck(){
+        try {
+            Class.forName("org.apache.hive.jdbc.HiveDriver");
+            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            Properties props = new Properties();
+            props.load(in);
+            String url = props.getProperty("url");
+            Connection connection = DriverManager.getConnection(url,props.getProperty("username"),props.getProperty("password"));
+            PreparedStatement ps=connection.prepareStatement("set");
+            ResultSet rs=ps.executeQuery();
+            Map<String, String> confDic = new HashMap<String, String>();
+            while(rs.next()){
+                String[] conf = rs.getString(1).split("=");
+                if(conf.length<2){
+                    continue;
+                }
+                confDic.put(conf[0], conf[1]);
+            }
+            if(!confDic.getOrDefault("hive.optimize.cp", "true").equals("true")){
+                System.out.println("未启用自动行剪裁, 应设置hive.optimize.cp=true");
+            }
+            if(!confDic.getOrDefault("hive.optimize.pruner", "true").equals("true")){
+                System.out.println("未启用自动分区剪裁, 应设置hive.optimize.pruner=true");
+            }
+            if(!confDic.getOrDefault("mapred.compress.map", "true").equals("true")){
+                System.out.println("未启用map输出压缩, 应设置mapred.compress.map.output=true");
+            }
+            if(!confDic.getOrDefault("mapred.output.compress", "true").equals("true")){
+                System.out.println("未启用job输出压缩, 应设置mapred.output.compress=true");
+            }
+            if(!confDic.getOrDefault("mapred.output.compress", "true").equals("true")
+                    && !confDic.getOrDefault("hive.optimize.bucketmapjoin", "true").equals("true")){
+                System.out.println("未启用联接使用bucket, 应设置hive.enforce.bucketing=true, " +
+                        "hive.optimize.bucketmapjoin=true");
+            }
+            if(!confDic.getOrDefault("hive.exec.parallel", "true").equals("true")){
+                System.out.println("未启用并行执行功能, 应设置hive.exec.parallel=true");
+            }
+            if(!confDic.getOrDefault("hive.vectorized.execution.enabled", "true").equals("true")
+                    && !confDic.getOrDefault("hive.vectorized.execution.reduce.enabled", "true").equals("true")){
+                System.out.println("未启用矢量化, 应设置hive.vectorized.execution.enabled=true, " +
+                        "hive.vectorized.execution.reduce.enabled=true");
+            }
+            if(!confDic.getOrDefault("hive.cbo.enable", "true").equals("true")){
+                System.out.println("未启用Cost Based Optimizer(CBO), 应设置hive.cbo.enable=true");
+            }
+            if(!confDic.getOrDefault("hive.server2.thrift.min.worker.threads", "1").equals("1")
+                    && !confDic.getOrDefault("hive.server2.thrift.max.worker.threads", "1").equals("1")){
+                System.out.println("Task has been rejected by ExecutorService, 应设置hive.server2.thrift.max.worker.threads=1, " +
+                        "hive.server2.thrift.min.worker.threads=1");
+            }
+            if(!confDic.getOrDefault("hive.exec.dynamic.partition.mode", "nonstrict").equals("nonstrict")){
+                System.out.println("对分区表进行insert未设置动态分区, 应设置hive.exec.dynamic.partition.mode=nonstrict");
+            }
+            if(!confDic.getOrDefault("hive.map.aggr", "true").equals("true")
+                    && !confDic.getOrDefault("hive.groupby.mapaggr.checkinterval", "100000").equals("100000")){
+                System.out.println("未启用map端部分聚合功能, 应设置hive.map.aggr=true, " +
+                        "hive.groupby.mapaggr.checkinterval=100000");
+            }
+            if(!confDic.getOrDefault("hive.groupby.skewindata", "true").equals("true")){
+                System.out.println("未启用发生数据倾斜时自动进行负载均衡, 应设置hive.groupby.skewindata=true");
+            }
+            if(!confDic.getOrDefault("hive.auto.convert.join", "true").equals("true")
+                    && !confDic.getOrDefault("hive.mapjoin.smalltable.filesize", "25000000").equals("25000000")){
+                System.out.println("小表join大表，未启用自动尝试map join, 应设置hive.auto.convert.join=true, " +
+                        "hive.mapjoin.smalltable.filesize=25000000");
+            }
+            if(!confDic.getOrDefault("hive.merge.mapfiles", "true").equals("true")
+                    && !confDic.getOrDefault("hive.merge.mapredfiles", "true").equals("true")){
+                System.out.println("未启用小文件自动合并, 应设置hive.merge.mapfiles=true, " +
+                        "hive.merge.mapredfiles=true");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

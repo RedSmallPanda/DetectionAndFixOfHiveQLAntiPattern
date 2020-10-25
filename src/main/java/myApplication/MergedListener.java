@@ -13,7 +13,6 @@ public class MergedListener extends HplsqlBaseListener {
     private List<String> selectItemList;
     private List<Integer> groupByFlag = new ArrayList<>();
     private List<Integer> currentSelectListNum = new ArrayList<>();
-    private HadoopSchema hadoopSchema = new HadoopSchema();
 
     @Override
     public void enterProgram(HplsqlParser.ProgramContext ctx){

@@ -4,6 +4,7 @@ import gen.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import mysqlUtils.MysqlUtil;
+import otherUtils.stringUtil;
 
 public class MergedTest {
     public static void main(String[] args) throws Exception {
@@ -21,7 +22,8 @@ public class MergedTest {
 
         //String s = "CREATE TABLE tableD (bar int, foo float);";  // 建多个相同表
         //String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";  // 在有分区的表上没有使用分区查询
-        String s = "select name from partitiontable where age=22;";  // 在有分区的表上没有使用分区查询
+        String ss = "select t1.name,t2.age from t1 join t2 on t1.id = t2.id order by t2.age;";  // 在有分区的表上没有使用分区查询
+        String s = stringUtil.join2innerJoin(ss);
 
         //创建输入字节流
         ANTLRInputStream input = new ANTLRInputStream(s);

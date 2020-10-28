@@ -14,11 +14,6 @@
 #
 /StaticAnalysis/src/main/java/mysqlUtils/application.properties
 
-<<<<<<< HEAD
 /DynamicAnalysis/hivecheck/.idea
 /DynamicAnalysis/hivecheck/target
-=======
-/DynamicAnalysis/.idea
-/DynamicAnalysis/target/
-/.idea
->>>>>>> f252310c034ddd6722dca7ac8b676b6ca4f4b486
+

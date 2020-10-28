@@ -73,15 +73,19 @@ public class MergedListener extends HplsqlBaseListener {
     public void enterFrom_clause(HplsqlParser.From_clauseContext ctx) {
 //        //重置join个数
 //        joinNum = 0;
-//        if(ctx.from_join_clause().size() != 0) {
-//            String tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
-//            String tableName2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
-//
-//            if(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
-//                System.out.println("Please put the table containing less records on the left side of join.");
-//            };
-//        }
-//        tableName = ctx.getStop().getText();
+        String tableName1 = "";
+        String tableName2 = "";
+        if(ctx.from_join_clause().size() != 0) {
+            if(ctx.from_table_clause().from_table_name_clause() != null && ctx.from_join_clause(0).from_table_clause().from_table_name_clause() != null){
+                tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
+                tableName2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
+            }
+
+            if(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
+                System.out.println("Please put the table containing less records on the left side of join.");
+            };
+        }
+        tableName = ctx.getStop().getText();
     }
 
     @Override

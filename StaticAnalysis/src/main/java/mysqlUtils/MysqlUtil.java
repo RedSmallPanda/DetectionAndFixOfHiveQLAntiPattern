@@ -72,7 +72,7 @@ public class MysqlUtil {
         catch(Exception e){
             e.printStackTrace();
         }
-        return(leftTableRowNum < rightTableRowNum);
+        return(leftTableRowNum <= rightTableRowNum);
     }
 
     public static boolean compareTwoTableRowNumByHive(String leftTable,String rightTable){

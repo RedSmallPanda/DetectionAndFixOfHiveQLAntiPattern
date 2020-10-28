@@ -44,7 +44,6 @@ public class bias_check {
             }
         }
         System.out.println(result);
-        Gson gson=new Gson();
         JSONObject object= new JSONObject(result);
         JSONArray js=object.getJSONObject("tasks").getJSONArray("task");
         int maxtime=0;

@@ -16,4 +16,5 @@
 
 /DynamicAnalysis/hivecheck/.idea
 /DynamicAnalysis/hivecheck/target
+/DynamicAnalysis/hivecheck/src/main/resources/application.properties
 

@@ -19,8 +19,9 @@ import java.util.ArrayList;
 
 public class bias_check {
     public static void main(String [] arg){
+        String url="";
         CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("http://202.120.40.28:50087/ws/v1/history/mapreduce/jobs/job_1603278053352_0035/tasks");
+        HttpGet httpGet = new HttpGet(url);
         CloseableHttpResponse response = null;
         try {
             response = httpClient.execute(httpGet);

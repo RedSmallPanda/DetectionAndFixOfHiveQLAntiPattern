@@ -14,8 +14,9 @@ import java.io.IOException;
 public class memorysetting_check {
     public static void main(String [] args){
         CloseableHttpClient httpClient = HttpClients.createDefault();
-        String hadoop_url="http://202.120.40.28:50087/";
-        HttpGet httpGet = new HttpGet("http://202.120.40.28:50087/jobhistory/job/job_1603857704538_0001");
+        String hadoop_url="";
+        String jobhistory="";
+        HttpGet httpGet = new HttpGet(jobhistory);
         CloseableHttpResponse response = null;
         try {
             response = httpClient.execute(httpGet);

@@ -2,14 +2,7 @@ package bias_check;
 
 import java.io.*;
 import java.util.Random;
-// sudo docker cp /mnt/sda/cn/hiveAntipattern/data/mapReduceNumberTest_50kAverage.txt myhive:/home
-// sudo docker exec -it myhive /bin/bash
-// /usr/hive/apache-hive-2.3.4-bin/bin/hive
-// create table mrtest_50kaverage (name string, age int, city string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
-// load data local inpath '/home/mapReduceNumberTest_50kAverage.txt' into table mrtest_50kaverage;
-// set mapred.reduce.tasks=10;
-// set hive.auto.convert.join=false;
-// SELECT n.name, a.age FROM mapReduceNumberTest_xk n JOIN mapReduceNumberTest_xk a ON n.loc=a.loc;
+
 public class gen_partition {
     public static String alphab="abcdefghijklmnopqrstuvwxyz";
     public static void main(String[] args) {

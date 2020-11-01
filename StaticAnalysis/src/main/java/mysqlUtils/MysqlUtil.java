@@ -14,8 +14,8 @@ public class MysqlUtil {
         int rightTableRowNum = 0;
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
-            //FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
+            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("mysqlUrl");
@@ -81,7 +81,8 @@ public class MysqlUtil {
         int rightTableRowNum = 0;
         try {
             Class.forName("org.apache.hive.jdbc.HiveDriver");
-            FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
+            //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
+            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("url");
@@ -119,8 +120,8 @@ public class MysqlUtil {
         String type2 = "";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
-            //FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
+            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("mysqlUrl");
@@ -161,8 +162,8 @@ public class MysqlUtil {
     public static boolean hasSameTable(HashSet<String> colName){
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
-//            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
+            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("mysqlUrl");
@@ -192,8 +193,8 @@ public class MysqlUtil {
     public static boolean usePartitionCorrect(String tableName, List<String> whereItemList){
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
-            //FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
+            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("mysqlUrl");
@@ -233,8 +234,8 @@ public class MysqlUtil {
     public static void configurationCheck(){
         try {
             Class.forName("org.apache.hive.jdbc.HiveDriver");
-            FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
-//            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+ //           FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
+            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("url");

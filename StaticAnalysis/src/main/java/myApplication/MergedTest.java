@@ -8,6 +8,16 @@ import otherUtils.stringUtil;
 
 public class MergedTest {
     public static void main(String[] args) throws Exception {
+        //String s = "select t1.col1,t2.col2 from t1 join (select count(*) from t3 where t3.age > 18) as t2";
+        // String s = "select cno,avg(score), lim from sc group by cno order by lim asc";
+        //String s = "select t1.col1, t2.col2 from t1 join t2 on avg(t1.col1) = t2.col2";
+        //String s = "select t1.col1, t2.col2 from t1 join t2 on first(t1.col1) = t2.col2";
+        //String s = "select t1.col1, t2.col2 from t1 join t2 on last(t1.col1) = t2.col2";
+        //String s = "select t1.col1, t2.col2 from t1 join t2 on stdev(t1.col1) = t2.col2";
+        //String s = "select t1.col1, t2.col2 from t1 join t2 on stdevp(t1.col1) = t2.col2";
+        //String s = "select t1.col1, t2.col2 from t1 join t2 on (t1.col1) = t2.col2";
+        // String s = "select col1,distinct col2 from t1 group by col1";
+
         //String s = "select * from a";  // 使用select *
         /*String s = "SELECT C.CustomerID, C.Name, Count(S.SalesID)\n" +
                 "FROM Customers as C\n" +

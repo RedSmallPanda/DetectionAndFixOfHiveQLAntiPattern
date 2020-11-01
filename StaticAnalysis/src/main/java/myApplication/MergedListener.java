@@ -82,6 +82,8 @@ public class MergedListener extends HplsqlBaseListener {
             }
 
             if(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
+                //System.out.println(tableName1 + " " + tableName2);
+                //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
                 System.out.println("Please put the table containing less records on the left side of join.");
             };
         }
@@ -236,7 +238,7 @@ public class MergedListener extends HplsqlBaseListener {
     @Override
     public void enterGroup_by_clause(HplsqlParser.Group_by_clauseContext ctx){
         if(!isGather){
-            System.out.println("Be careful! \"group\" by should be used with aggregate function!");
+            System.out.println("Be careful! \"group by\" should be used with aggregate function!");
         }
         groupByFlag.add(1);
         List<HplsqlParser.ExprContext> exprContext = ctx.expr();

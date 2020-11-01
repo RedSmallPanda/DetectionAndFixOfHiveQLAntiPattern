@@ -8,16 +8,14 @@ import otherUtils.stringUtil;
 
 public class MergedTest {
     public static void main(String[] args) throws Exception {
-        //String s = "select t1.col1,t2.col2 from t1 join (select count(*) from t3 where t3.age > 18) as t2";
-        // String s = "select cno,avg(score), lim from sc group by cno order by lim asc";
-        //String s = "select t1.col1, t2.col2 from t1 join t2 on avg(t1.col1) = t2.col2";
-        //String s = "select t1.col1, t2.col2 from t1 join t2 on first(t1.col1) = t2.col2";
-        //String s = "select t1.col1, t2.col2 from t1 join t2 on last(t1.col1) = t2.col2";
-        //String s = "select t1.col1, t2.col2 from t1 join t2 on stdev(t1.col1) = t2.col2";
-        //String s = "select t1.col1, t2.col2 from t1 join t2 on stdevp(t1.col1) = t2.col2";
-        //String s = "select t1.col1, t2.col2 from t1 join t2 on (t1.col1) = t2.col2";
-        // String s = "select col1,distinct col2 from t1 group by col1";
-
+        String s ="select count(distinct col1) from (select col2,col1 from t2 where col2 >100) as t1";
+//        String s = "select t1.col1, t1.col2, t2.col3 from t1 join t2 on t1.col1 = t2.col1 group by t2.col1, t1.col2, t2.col3";
+//        String s ="select sum(col1), col2, distinct col3 from t1 group by col1, col2";
+//        String s = "select col1,col2 from (select t1.col1,t1.col2,t2.col3 from t1 join t2 on t1.id = t2.id having t1.col1 >100) as t3";
+//        String s = "select t1.col1, t2.col2 from table1 as t1 join table2 as t2 on count(t1.col1)=t2.col2";
+        //String s ="select count(col1) from (select distinct col1 from t2 where col2 > 100) as t1";
+//        String s ="select t2.age,t1.name from t2 inner join t1 on t2.id = t1.id";
+        //String s ="select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id";//Please put the table containing less records on the left side of join.
         //String s = "select * from a";  // 使用select *
         /*String s = "SELECT C.CustomerID, C.Name, Count(S.SalesID)\n" +
                 "FROM Customers as C\n" +
@@ -32,9 +30,14 @@ public class MergedTest {
 
         //String s = "CREATE TABLE tableD (bar int, foo float);";  // 建多个相同表
         //String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";  // 在有分区的表上没有使用分区查询
+<<<<<<< HEAD
+        //String s = "select name from partitiontable where age=22;";  // 在有分区的表上没有使用分区查询
+       // String s = "select count( distinct cookie ) from weblogs where dt <= ${today} and dt >= ${90daysAgo}";
+=======
         String ss = "select t3.subname,t4.age from (select t1.subname,t2.age from t1 inner join t2 on t1.id = t2.id) as t3 inner join t4 on t4.name = t3.name;";  // 在有分区的表上没有使用分区查询
         String s = stringUtil.join2innerJoin(ss);
 
+>>>>>>> 52e5cc2c348365c1700d9c7eb4355c630efa520f
         //创建输入字节流
         ANTLRInputStream input = new ANTLRInputStream(s);
         //构建词法分析器

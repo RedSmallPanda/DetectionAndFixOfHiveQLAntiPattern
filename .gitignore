@@ -13,6 +13,6 @@
 /StaticAnalysis/*.iml
 #
 /StaticAnalysis/src/main/java/mysqlUtils/application.properties
-
+/.idea
 /DynamicAnalysis/.idea
 /DynamicAnalysis/target/

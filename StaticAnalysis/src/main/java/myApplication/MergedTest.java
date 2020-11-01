@@ -4,6 +4,7 @@ import gen.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import mysqlUtils.MysqlUtil;
+import otherUtils.stringUtil;
 
 public class MergedTest {
     public static void main(String[] args) throws Exception {
@@ -29,8 +30,14 @@ public class MergedTest {
 
         //String s = "CREATE TABLE tableD (bar int, foo float);";  // 建多个相同表
         //String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";  // 在有分区的表上没有使用分区查询
+<<<<<<< HEAD
         //String s = "select name from partitiontable where age=22;";  // 在有分区的表上没有使用分区查询
        // String s = "select count( distinct cookie ) from weblogs where dt <= ${today} and dt >= ${90daysAgo}";
+=======
+        String ss = "select t3.subname,t4.age from (select t1.subname,t2.age from t1 inner join t2 on t1.id = t2.id) as t3 inner join t4 on t4.name = t3.name;";  // 在有分区的表上没有使用分区查询
+        String s = stringUtil.join2innerJoin(ss);
+
+>>>>>>> 52e5cc2c348365c1700d9c7eb4355c630efa520f
         //创建输入字节流
         ANTLRInputStream input = new ANTLRInputStream(s);
         //构建词法分析器

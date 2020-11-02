@@ -12,15 +12,12 @@
 /StaticAnalysis/.idea
 /StaticAnalysis/*.iml
 #
-/StaticAnalysis/src/main/java/mysqlUtils/application.properties
-<<<<<<< HEAD
 /.idea
 /DynamicAnalysis/.idea
 /DynamicAnalysis/target/
-=======
+application.properties
 
 /DynamicAnalysis/hivecheck/.idea
 /DynamicAnalysis/hivecheck/target
 /DynamicAnalysis/hivecheck/src/main/resources/application.properties
 .idea
->>>>>>> 52e5cc2c348365c1700d9c7eb4355c630efa520f

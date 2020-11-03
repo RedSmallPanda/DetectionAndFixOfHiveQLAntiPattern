@@ -21,3 +21,4 @@ application.properties
 /DynamicAnalysis/hivecheck/target
 /DynamicAnalysis/hivecheck/src/main/resources/application.properties
 .idea
+data

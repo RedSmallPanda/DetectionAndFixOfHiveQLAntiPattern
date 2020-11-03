@@ -8,7 +8,7 @@ import otherUtils.stringUtil;
 
 public class MergedTest {
     public static void main(String[] args) throws Exception {
-        String s ="select count(distinct col1) from (select col2,col1 from t2 where col2 >100) as t1";
+//        String s ="select count(distinct col1) from (select col2,col1 from t2 where col2 >100) as t1";
 //        String s = "select t1.col1, t1.col2, t2.col3 from t1 join t2 on t1.col1 = t2.col1 group by t2.col1, t1.col2, t2.col3";
 //        String s ="select sum(col1), col2, distinct col3 from t1 group by col1, col2";
 //        String s = "select col1,col2 from (select t1.col1,t1.col2,t2.col3 from t1 join t2 on t1.id = t2.id having t1.col1 >100) as t3";
@@ -30,7 +30,7 @@ public class MergedTest {
 
         //String s = "CREATE TABLE tableD (bar int, foo float);";  // 建多个相同表
         //String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";  // 在有分区的表上没有使用分区查询
-        String ss = "select t3.subname,t4.age from (select t1.subname,t2.age from t1 inner join t2 on t1.id = t2.id) as t3 inner join t4 on t4.name = t3.name;";  // 在有分区的表上没有使用分区查询
+        String ss = "SELECT n.name, a.age FROM mrtest_70kskew n JOIN mrtest_70kskew a ON n.loc=a.loc;";  // 在有分区的表上没有使用分区查询
         String s = stringUtil.join2innerJoin(ss);
 
         //创建输入字节流

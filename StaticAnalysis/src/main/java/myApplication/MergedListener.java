@@ -1,18 +1,18 @@
 package myApplication;
 
 import gen.*;
+import hiveUtils.HiveUtil;
 import mysqlUtils.MysqlUtil;
 
+import java.util.*;
 import java.util.regex.Pattern;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashSet;
 
 public class MergedListener extends HplsqlBaseListener {
     private int joinNum = 0;
     private List<String> selectItemList;
     private List<Integer> groupByFlag = new ArrayList<>();
     private List<Integer> currentSelectListNum = new ArrayList<>();
+    private Map<String,String> aliasTableName = new HashMap<>();
 
     @Override
     public void enterProgram(HplsqlParser.ProgramContext ctx){
@@ -75,10 +75,20 @@ public class MergedListener extends HplsqlBaseListener {
 //        joinNum = 0;
         String tableName1 = "";
         String tableName2 = "";
+        String alias1 = "";
+        String alias2 = "";
         if(ctx.from_join_clause().size() != 0) {
             if(ctx.from_table_clause().from_table_name_clause() != null && ctx.from_join_clause(0).from_table_clause().from_table_name_clause() != null){
                 tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
+                if(ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null){
+                    alias1 = ctx.from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
+                    aliasTableName.put(alias1,tableName1);
+                }
                 tableName2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
+                if(ctx.from_join_clause(0).from_table_clause().from_table_name_clause().from_alias_clause() != null){
+                    alias2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
+                    aliasTableName.put(alias2,tableName2);
+                }
             }
 
             if(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
@@ -147,10 +157,27 @@ public class MergedListener extends HplsqlBaseListener {
                 System.out.println("不要在join子句中进行运算");
             }
 
+            //TODO:处理别名的情况
             //判断是否将不同数据类型字段进行join
             if(MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(),rightSymbol.getChild(0).getText()) == false){
                 System.out.println("不要将不同数据类型字段进行join");
             }
+
+            //判断是否存在数据倾斜
+            String[] table1 = leftSymbol.getChild(0).getText().split("\\.");
+            String[] table2 = rightSymbol.getChild(0).getText().split("\\.");
+            if(table1.length >= 2 || table2.length >= 2){
+                String tableName1 = table1[0];
+                String column1 = table1[1];
+                String tableName2 = table2[0];
+                String column2 = table2[1];
+                tableName1 = aliasTableName.get(tableName1) == null?tableName1:aliasTableName.get(tableName1);
+                tableName2 = aliasTableName.get(tableName2) == null?tableName2:aliasTableName.get(tableName2);
+                if(HiveUtil.isDataImbalanced(tableName1,column1,tableName2,column2) == true){
+                    System.out.println("可能存在数据倾斜！");
+                }
+            }
+
         }
     }
 

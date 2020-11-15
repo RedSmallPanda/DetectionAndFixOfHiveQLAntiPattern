@@ -1,0 +1,14 @@
+city30 reduce 1 97615 01:37
+city30 reduce 3 47168 00:47
+city30 reduce 5 38880 00:38
+city30 reduce 10 37619 00:37
+city30 reduce 11 39585 00:39
+city30 reduce 13 38910 00:38
+city30 reduce 15 39524 00:39
+city30 reduce 17 39566 00:39
+city30 reduce 19 41549 00:41
+city30 reduce 21 41573 00:41
+city30 reduce 30 46862 00:46
+city30 reduce 50 56899 00:56
+city30 reduce 100 82837 01:22
+city30 reduce 300 188916 03:08

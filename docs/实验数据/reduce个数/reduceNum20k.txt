@@ -1,0 +1,72 @@
+city1 reduce 1 308176 05:08
+city1 reduce 3 405163 06:45
+city1 reduce 5 327602 05:27
+city1 reduce 10 326315 05:26
+city1 reduce 30 400110 06:40
+city1 reduce 50 400582 06:40
+city1 reduce 100 386446 06:26
+city1 reduce 300 334821 05:34
+
+city3 reduce 1 108126 01:48
+city3 reduce 3 49484 00:49
+city3 reduce 5 51511 00:51
+city3 reduce 10 51512 00:51
+city3 reduce 30 54140 00:54
+city3 reduce 50 57489 00:57
+city3 reduce 100 81482 01:21
+city3 reduce 300 187490 03:07
+
+city5 reduce 1 70803 01:10
+city5 reduce 3 39465 00:39
+city5 reduce 5 33475 00:33
+city5 reduce 10 34822 00:34
+city5 reduce 30 40976 00:40
+city5 reduce 50 51533 00:51
+city5 reduce 100 76888 01:16
+city5 reduce 300 185539 03:05
+
+city10 reduce 1 44187 00:44
+city10 reduce 3 28800 00:28
+city10 reduce 5 26144 00:26
+city10 reduce 10 28824 00:28
+city10 reduce 30 38155 00:38
+city10 reduce 50 48830 00:48
+city10 reduce 100 75491 01:15
+city10 reduce 300 182835 03:02
+
+city30 reduce 1 26815 00:26
+city30 reduce 3 23486 00:23
+city30 reduce 5 23491 00:23
+city30 reduce 10 26827 00:26
+city30 reduce 30 36158 00:36
+city30 reduce 50 46803 00:46
+city30 reduce 100 74190 01:14
+city30 reduce 300 180176 03:00
+
+city50 reduce 1 22824 00:22
+city50 reduce 3 22166 00:22
+city50 reduce 5 22168 00:22
+city50 reduce 10 26175 00:26
+city50 reduce 30 35492 00:35
+city50 reduce 50 47471 00:47
+city50 reduce 100 74844 01:14
+city50 reduce 300 180159 03:00
+
+city100 reduce 1 19462 00:19
+city100 reduce 3 20822 00:20
+city100 reduce 5 22140 00:22
+city100 reduce 10 24150 00:24
+city100 reduce 30 35472 00:35
+city100 reduce 50 47507 00:47
+city100 reduce 100 76833 01:16
+city100 reduce 300 183508 03:03
+
+city300 reduce 1 18158 00:18
+city300 reduce 3 19506 00:19
+city300 reduce 5 20799 00:20
+city300 reduce 10 24839 00:24
+city300 reduce 30 36197 00:36
+city300 reduce 50 46843 00:46
+city300 reduce 100 75526 01:15
+city300 reduce 300 184190 03:04
+

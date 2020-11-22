@@ -47,14 +47,14 @@ public class mapjoin_test {
         try{
             FileWriter f = new FileWriter("data/selfJoinOrMapjoin.txt");
             String[] joinConf = {"set mapred.reduce.tasks=5", "set hive.auto.convert.join=false","set hive.auto.convert.join.noconditionaltask.size=10000000","set hive.mapjoin.smalltable.filesize=25000000","set mapred.max.split.size=256000000"};
-            String[] mapJoinConf = {"set hive.auto.convert.join=true","set hive.mapjoin.smalltable.filesize=70000000","set mapred.max.split.size=100000000"};
-            String[] fileList = {"50k","200age_50m"};
-            for(int i=0; i<1; i++){
-                for(int j=i; j<2; j++){
+            String[] mapJoinConf = {"set hive.auto.convert.join=true","set hive.mapjoin.smalltable.filesize=700000000","set mapred.max.split.size=100000000"};
+            String[] fileList = {"50k","55age_500k","200age_5m","200age_50m"};
+            for(int i=0; i<4; i++){
+                for(int j=i; j<4; j++){
                     String a = "mrtest_" + fileList[i];
                     String b = "mrtest_" + fileList[j];
-                    String sql = "SELECT a.name, b.age FROM "+a+" a JOIN "+b+" b ON a.city=b.city";
-                    execSQL(joinConf, sql, f, a+" join "+b);
+                    String sql = "SELECT a.name, b.age FROM "+a+" a JOIN "+b+" b ON a.name=b.name";
+//                    execSQL(joinConf, sql, f, a+" join "+b);
                     execSQL(mapJoinConf, sql, f, a+" mapJoin "+b);
                 }
             }

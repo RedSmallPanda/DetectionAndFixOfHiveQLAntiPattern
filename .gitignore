@@ -20,5 +20,6 @@ application.properties
 /DynamicAnalysis/hivecheck/.idea
 /DynamicAnalysis/hivecheck/target
 /DynamicAnalysis/hivecheck/src/main/resources/application.properties
+/DynamicAnalysis/MLP/kaggle-house-price/__pycache__
 .idea
 data

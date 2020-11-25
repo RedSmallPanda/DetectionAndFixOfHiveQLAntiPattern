@@ -99,6 +99,6 @@ def pred(net, test_data, test_features):
     with torch.no_grad():
         preds = net(test_features)
     preds = np.exp(preds.numpy())
-    test_data['SalePrice'] = pd.Series(preds.reshape(1, -1)[0])
-    submission = pd.concat([test_data['Id'], test_data['SalePrice']], axis=1)
-    submission.to_csv('submission.csv', index=False)
+    test_data['time'] = pd.Series(preds.reshape(1, -1)[0])
+    submission = pd.concat([test_data['t1'], test_data['key1'],test_data['t2'],test_data['key2'],test_data['reduce'],test_data['time']], axis=1)
+    submission.to_csv('hive_test.csv', index=False)

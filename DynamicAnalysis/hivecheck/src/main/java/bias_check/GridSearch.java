@@ -1,9 +1,7 @@
 package bias_check;
+
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
@@ -11,7 +9,7 @@ import java.util.Properties;
 public class GridSearch {
 
     // 执行SQL语句
-    private static void execSQL(String[] conf, String sql, FileWriter f, String comment){
+    private void execSQL(String[] conf, String sql, FileWriter f, String comment){
         try {
             Class.forName("org.apache.hive.jdbc.HiveDriver");
             FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
@@ -23,17 +21,21 @@ public class GridSearch {
             for(String c : conf){
                 ps.execute(c);
             }
+            ps.setQueryTimeout(30*60);
+//            ps.setQueryTimeout(1);
             long startTime=System.currentTimeMillis();
             System.out.print(comment+" ");
-            for(int i=0; i<3; i++){
+            for(int i=0; i<1; i++){
                 ps.execute(sql);
                 System.out.print("*");
             }
-            long costTime=(System.currentTimeMillis()-startTime)/3;
+            long costTime=(System.currentTimeMillis()-startTime);
             SimpleDateFormat formatter = new SimpleDateFormat("mm:ss");
             String ms = formatter.format(costTime);
             System.out.println(" Time:"+ms);
-            f.write(comment+" "+costTime+" "+ms+"\n");
+//            f.write(comment+" "+costTime+" "+ms+"\n");
+            f.write(comment+","+costTime+"\n");
+            f.flush();
             ps.close();
             connection.close();
         } catch (Exception e) {
@@ -89,6 +91,63 @@ public class GridSearch {
             }
             f2.close();
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+    x：join/mapjoin，t1的数据量，t1的key种数，t2的数据量，t2的key种数，reduce数, split数
+    y：时间
+    */
+    public void mlpTrainingDataGen(String[] tableNameSuf){
+        String tableNamePre = "mrtest_";
+        int[] recordNum = new int[tableNameSuf.length];
+        int[] keyNum = new int[tableNameSuf.length];
+        try{
+            Class.forName("org.apache.hive.jdbc.HiveDriver");
+            FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
+            Properties props = new Properties();
+            props.load(in);
+            String url = props.getProperty("url");
+            Connection connection = DriverManager.getConnection(url,props.getProperty("username"),props.getProperty("password"));
+            Statement ps=connection.createStatement();
+            for(int i=0; i<tableNameSuf.length; i++){
+                String tableName = tableNamePre + tableNameSuf[i];
+                int[] temp = ReduceNumCheck.getRecordNumAndKeyNum(tableName, "city", ps);
+                recordNum[i] = temp[0];
+                keyNum[i] = temp[1];
+            }
+            ps.close();
+            connection.close();
+
+            int[] reduce = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25};
+//            int[] reduce = {1, 3};
+            int[] splitMax = {128000000, 256000000};
+            // t1Num t1Key t2Num t2Key reduce splitMax time
+            FileWriter f1 = new FileWriter("data/joinMlpTrainData.txt", true);
+            for(int i=0; i<tableNameSuf.length; i++){
+                int t1Num = recordNum[i];
+                int t1Key = keyNum[i];
+                for(int j=i; j<tableNameSuf.length; j++){
+                    int t2Num = recordNum[j];
+                    int t2Key = keyNum[j];
+                    String sql = "SELECT a.name, b.age FROM "+tableNamePre + tableNameSuf[i]+" a JOIN "
+                            +tableNamePre + tableNameSuf[j]+" b ON a.city=b.city";
+                    for (int sMax : splitMax) {
+                        for (int r : reduce) {
+                            String[] joinConf = {"set mapred.max.split.size="+sMax,
+                                    "set mapred.reduce.tasks=" + r, "set hive.auto.convert.join=false"};
+                            execSQL(joinConf, sql, f1,
+                                    String.format("%d,%d,%d,%d,%d,%d", t1Num, t1Key, t2Num, t2Key, r, sMax));
+                        }
+                        if(sMax > t1Num*10 && sMax > t2Num*10){
+                            break;
+                        }
+                    }
+                }
+            }
+            f1.close();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

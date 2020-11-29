@@ -36,8 +36,8 @@ public class ReduceNumCheck {
     }
 
     /*根据表名找表的记录数和key的数量*/
-    private int[] getRecordNumAndKeyNum(String table, String key, Statement ps) throws Exception {
-        System.out.println("Start get info of table " + table);
+    public static int[] getRecordNumAndKeyNum(String table, String key, Statement ps) throws Exception {
+        System.out.print("Start get info of table " + table);
         try {
             ResultSet r = ps.executeQuery(String.format("select %s, count(1) from %s group by %s", key, table, key));
             int recordNum = 0, keyNum = 0;
@@ -45,6 +45,7 @@ public class ReduceNumCheck {
                 keyNum += 1;
                 recordNum += r.getInt(2);
             }
+            System.out.println(" recordNum: " + recordNum + " keyNum: " + keyNum);
             return new int[]{recordNum, keyNum};
         } catch (Exception e){
             System.out.println("Cannot get info of table " + table);

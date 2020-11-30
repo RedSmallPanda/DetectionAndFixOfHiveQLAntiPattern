@@ -8,7 +8,7 @@ public class Main {
             tableNameSuf[i] = "mlp"+(i+1);
         }
         GridSearch gs = new GridSearch();
-//        String[] tableNameSufTest = {"50", "500"};
+        String[] tableNameSufTest = {"50", "500"};
         gs.mlpTrainingDataGen(tableNameSuf);
 
 ////        int threshold = new ReduceTaskBaselineTest().test();

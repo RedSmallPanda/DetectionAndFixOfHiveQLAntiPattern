@@ -101,4 +101,16 @@ def pred(net, test_data, test_features):
     preds = np.exp(preds.numpy())
     test_data['time'] = pd.Series(preds.reshape(1, -1)[0])
     submission = pd.concat([test_data['t1'], test_data['key1'],test_data['t2'],test_data['key2'],test_data['reduce'],test_data['time']], axis=1)
-    submission.to_csv('hive_test.csv', index=False)
+    submission.to_csv('hive_test2.csv', index=False)
+    return submission
+
+def pred_raw(net,test_data,test_features):
+    net = net.eval()
+    net = net.cpu()
+    with torch.no_grad():
+        preds = net(test_features)
+    preds = np.exp(preds.numpy())
+    test_data['time'] = pd.Series(preds.reshape(1, -1)[0])
+    submission = pd.concat([test_data['t1'], test_data['key1'], test_data['t2'], test_data['key2'], test_data['reduce'],
+                            test_data['time']], axis=1)
+    return submission

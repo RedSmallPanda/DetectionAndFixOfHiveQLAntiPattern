@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import torch
 from torch import nn
 from utils import train_model, pred
+from Model import get_model
 
-train = pd.read_csv('./all/joinMlpTrainData.csv')
+train = pd.read_csv('./all/joinMlpTrainTrainData_notest.csv')
 test = pd.read_csv('./all/joinMlpTrainTest.csv')
 
 print('一共有 {} 个训练集样本'.format(train.shape[0]))
@@ -51,14 +52,7 @@ test_features = all_features[train.shape[0]:].values.astype(np.float32)
 test_features = torch.from_numpy(test_features)
 
 
-def get_model():
-    net = nn.Sequential(
-        nn.Linear(feat_dim, 1)
-    )
-    return net
-
-
-net = get_model()
+net = get_model(feat_dim)
 print(net)
 
 # 可以调整的超参
@@ -68,12 +62,11 @@ lr = 0.01
 wd = 0
 use_gpu = True
 
-net = get_model()
 train_model(net, train_features, train_labels, valid_features, valid_labels, epochs,
             batch_size, lr, wd, use_gpu)
 
-net = get_model()
-train_model(net, train_valid_features, train_valid_labels, None, None, epochs,
+train_model(net, train_valid_features, train_valid_labels, None, None, 1,
             batch_size, lr, wd, use_gpu)
 
+torch.save(net, "./hive_pred_model.pkl")
 pred(net, test, test_features)

@@ -94,10 +94,10 @@ public class ReduceNumCheck {
         int reduceNum;
         // 若单key数据计算量超过阈值，则1key1reduce
         if(calculationScalePerKey > threshold){
-            reduceNum =  Math.min(keyNum, cpuNum);
+            reduceNum = Math.min(keyNum, cpuNum);
         }else{
             // 若未超过，则总共1reduce
-            reduceNum =  1;
+            reduceNum = 1;
         }
         System.out.println("Suggest set "+reduceNum+" reduce task(s).");
         return reduceNum;

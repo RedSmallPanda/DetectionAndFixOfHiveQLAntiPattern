@@ -13,13 +13,19 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 
 public class bias_check {
-    public static void main(String [] arg){
-        String url="";
+    public static void main(String [] arg) throws IOException {
+        FileInputStream in = new FileInputStream("src/main/resources/application.properties");
+        Properties props = new Properties();
+        props.load(in);
+        String url = props.getProperty("bias_check_url");
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(url);
         CloseableHttpResponse response = null;
@@ -49,20 +55,25 @@ public class bias_check {
         JSONArray js=object.getJSONObject("tasks").getJSONArray("task");
         int maxtime=0;
         int mintime=Integer.MAX_VALUE;
+        float reduce_total=0;
+        int reduce_jobs=0;
         for(int i=0;i<js.length();i++){
 
             JSONObject tmp=js.getJSONObject(i);
             if(tmp.getString("type").equals("REDUCE")){
                 int time=tmp.getInt("elapsedTime");
+                reduce_jobs+=1;
+                reduce_total+=time;
                 if (time >maxtime){maxtime=time;}
                 if(time <mintime){mintime=time;}
             }
         }
         System.out.println("max time:"+maxtime);
         System.out.println("min time:"+mintime );
+        System.out.println("mean without max: "+(1.0*(reduce_total-maxtime)/(reduce_jobs-1)));
 
 
-        if((1.0*maxtime/mintime) >1.5){
+        if((1.0*maxtime/(1.0*(reduce_total-maxtime)/(reduce_jobs-1))) >1.5){
             System.out.println("attention：检测到reduce完成时间差异过大，可能存在数据倾斜");
         }
 

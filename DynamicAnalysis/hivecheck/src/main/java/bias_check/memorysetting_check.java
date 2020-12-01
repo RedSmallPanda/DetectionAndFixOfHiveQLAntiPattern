@@ -9,13 +9,19 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import javax.xml.xpath.XPath;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Properties;
 
 public class memorysetting_check {
-    public static void main(String [] args){
+    public static void main(String [] args) throws IOException {
+        FileInputStream in = new FileInputStream("src/main/resources/application.properties");
+        Properties props = new Properties();
+        props.load(in);
+        String hadoop_url = props.getProperty("hadoop_url");
+        String jobhistory=props.getProperty("jobhistory");
         CloseableHttpClient httpClient = HttpClients.createDefault();
-        String hadoop_url="";
-        String jobhistory="";
+
         HttpGet httpGet = new HttpGet(jobhistory);
         CloseableHttpResponse response = null;
         try {

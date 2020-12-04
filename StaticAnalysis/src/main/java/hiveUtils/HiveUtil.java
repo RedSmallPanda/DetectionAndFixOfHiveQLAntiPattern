@@ -14,6 +14,7 @@ import java.util.Properties;
 
 public class HiveUtil {
     public static boolean isDataImbalanced(String table1,String col1,String table2,String col2){
+        System.out.println("Checking data imbalance, please wait...");
         Map<String,Long> keyNum1 = new HashMap<>();
         Map<String,Long> keyNum2 = new HashMap<>();
         Map<String,Long> joinedMap = new HashMap<>();
@@ -51,6 +52,9 @@ public class HiveUtil {
                 }
                 sum += iter.getValue();
                 keyNum += 1;
+            }
+            if(keyNum == 0) {
+                return false;
             }
             average = keyNum>1?(sum-maxNum)/(keyNum-1):sum/keyNum;
 

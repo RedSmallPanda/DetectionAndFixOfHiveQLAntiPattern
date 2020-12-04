@@ -8,4 +8,13 @@ public class TableOptAlias {
         this.name = name;
         this.alias = alias;
     }
+
+    public String[] getNameAlias() {
+        return new String[]{name, alias};
+    }
+
+    public void setNameAlias(String[] nameAlias) {
+        this.name = nameAlias[0];
+        this.alias = nameAlias[1];
+    }
 }

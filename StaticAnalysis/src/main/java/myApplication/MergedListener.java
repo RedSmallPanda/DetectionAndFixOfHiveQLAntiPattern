@@ -91,10 +91,11 @@ public class MergedListener extends HplsqlBaseListener {
                 }
             }
 
-            if(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
+            if(!MysqlUtil.compareTwoTableRowNum(tableName1, tableName2)){
                 //System.out.println(tableName1 + " " + tableName2);
                 //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
-                System.out.println("Please put the table containing less records on the left side of join.");
+                System.out.println("Please put the table containing less records on the left side of join.\n" +
+                        "Or check if the metaData of related tables is correct.");
             };
         }
         tableName = ctx.getStop().getText();

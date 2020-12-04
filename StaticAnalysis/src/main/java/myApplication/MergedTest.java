@@ -22,7 +22,8 @@ public class MergedTest {
         //构建树遍历器
         ParseTreeWalker walker = new ParseTreeWalker();
         //第一个参数是自己写的解析器
-        walker.walk(new MergedListener(),tree);
+//        walker.walk(new MergedListener(),tree);
+        walker.walk(new TestFixListener(),tree);
     }
 
     public static void configCheck(){
@@ -38,7 +39,7 @@ public class MergedTest {
         //String s ="select count(col1) from (select distinct col1 from t2 where col2 > 100) as t1";
 //        String s ="select t2.age,t1.name from t2 inner join t1 on t2.id = t1.id";
         //String s ="select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id";//Please put the table containing less records on the left side of join.
-        String s = "select * from a";  // 使用select *
+//        String s = "select * from a";  // 使用select *
         /*String s = "SELECT C.CustomerID, C.Name, Count(S.SalesID)\n" +
                 "FROM Customers as C\n" +
                 "   INNER JOIN Sales as S\n" +
@@ -54,6 +55,8 @@ public class MergedTest {
         //String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";  // 在有分区的表上没有使用分区查询
 //        String ss = "SELECT n.name, a.age FROM mrtest_70kskew n JOIN mrtest_70kskew a ON n.loc=a.loc;";  // 在有分区的表上没有使用分区查询
 //        String s = stringUtil.join2innerJoin(ss);
+        String s = "SELECT t1.name, t2.age FROM mrtest_10 as t1 JOIN mrtest_500 as t2 ON t1.city=t2.city;";
+//        String s = "SELECT t1.name, t2.age FROM mrtest_500 as t1 JOIN mrtest_10 as t2 ON t1.city=t2.city;";
 
         astCheck(s);
 

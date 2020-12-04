@@ -18,6 +18,14 @@ public class FromJoinTable {
         this.onCondition = onCondition;
     }
 
+    public String[] getNameAlias() {
+        return tableNameAlias.getNameAlias();
+    }
+
+    public void setNameAlias(String[] nameAlias) {
+        tableNameAlias.setNameAlias(nameAlias);
+    }
+
     @Override
     public String toString() {
         return "FromJoinTable{" +

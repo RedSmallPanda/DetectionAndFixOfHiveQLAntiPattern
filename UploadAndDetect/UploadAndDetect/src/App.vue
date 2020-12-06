@@ -19,6 +19,8 @@
 <script>
 import NavMenu from './components/NavMenu.vue'
 import Header from './components/Header'
+import api from './api/backend-api'
+
 export default {
   name: 'app',
   components:{
@@ -42,6 +44,12 @@ created() {
     //页面创建时执行一次getHeight进行赋值，顺道绑定resize事件
     window.addEventListener("resize", this.getHeight);
     this.getHeight();
+    api.getUsers().then(response => {
+      console.log("Response: " + response.data)
+    }).catch(error => {
+      console.log("Error: " + error);
+      this.errors = error;
+    })
 }
 
 }

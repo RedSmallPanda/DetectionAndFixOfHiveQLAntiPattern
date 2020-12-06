@@ -63,6 +63,6 @@ public class MergedTest {
         //System.out.println(tree.toStringTree(parser));
 
         //配置项检测
-//        configCheck();
+        configCheck();
     }
 }

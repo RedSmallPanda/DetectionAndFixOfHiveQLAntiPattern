@@ -23,3 +23,5 @@ application.properties
 /DynamicAnalysis/MLP/kaggle-house-price/__pycache__
 .idea
 data
+/UploadAndDetect/.idea
+/UploadAndDetect/node_modules

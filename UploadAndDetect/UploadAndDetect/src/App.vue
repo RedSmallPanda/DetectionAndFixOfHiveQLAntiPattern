@@ -1,30 +1,59 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
     <el-container>
-      <el-header>Header</el-header>
-      <el-container>
-        <el-aside width="20%" background="red">Aside</el-aside>
-        <el-main>Main</el-main>
+      <el-header class="header">
+        <vheader/>
+      </el-header>
+      <el-container :style="defaultHeight">
+        <el-aside width="200px">
+          <navmenu></navmenu>
+          </el-aside>
+      <el-main>Main</el-main>
       </el-container>
     </el-container>
   </div>
 </template>
 
 <script>
+import NavMenu from './components/NavMenu.vue'
+import Header from './components/Header'
 export default {
-  name: 'App'
+  name: 'app',
+  components:{
+    'navmenu': NavMenu,
+    'vheader': Header
+  },
+  data() {
+    return {
+        defaultHeight: {
+            height: ""
+        }
+    };
+},
+methods: {
+    //定义方法，获取高度减去头尾
+    getHeight() {
+        this.defaultHeight.height = window.innerHeight - 90 + "px";
+    }
+},
+created() {
+    //页面创建时执行一次getHeight进行赋值，顺道绑定resize事件
+    window.addEventListener("resize", this.getHeight);
+    this.getHeight();
 }
+
+}
+
 </script>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+
+<style >
+.html{
+  height: 100%;
+}
+.header {
+  background-color: #2970b6;
+  color: #fff;
+  line-height: 60px;
 }
 </style>

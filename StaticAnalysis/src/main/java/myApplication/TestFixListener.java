@@ -115,14 +115,17 @@ public class TestFixListener extends HplsqlBaseListener {
 
                     //TODO:修复过程构建table token
                     selectStmt.addTable(tableName2,alias2,ctx.from_join_clause(0).from_join_type_clause().getText(),ctx.from_join_clause(0).bool_expr().getText());
-                    System.out.println(ctx.from_join_clause(0).bool_expr().getText());
+//                    System.out.println(ctx.from_join_clause(0).bool_expr().getText());
                 }
             }
 
-            if(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2) == false){
+            if(!MysqlUtil.compareTwoTableRowNum(tableName1, tableName2)){
                 //System.out.println(tableName1 + " " + tableName2);
                 //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
-                System.out.println("Please put the table containing less records on the left side of join.");
+                System.out.println("Please put the table containing less records on the left side of join.\n" +
+                        "Or check if the metaData of related tables is correct.");
+                //TODO:修复两表顺序
+                selectStmt.swichJoinTables();
             };
         }
         //仅存在一张表

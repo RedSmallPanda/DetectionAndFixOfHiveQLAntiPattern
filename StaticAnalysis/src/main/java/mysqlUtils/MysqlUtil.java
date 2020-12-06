@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.util.*;
 
 public class MysqlUtil {
-    public static boolean compareTwoTableRowNum(String leftTable,String rightTable) {
+    public static boolean compareTwoTableRowNum(String leftTable, String rightTable) {
         int leftTableRowNum = 0;
         int rightTableRowNum = 0;
         try {

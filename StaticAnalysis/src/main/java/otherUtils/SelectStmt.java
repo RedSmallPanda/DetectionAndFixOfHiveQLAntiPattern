@@ -2,6 +2,7 @@ package otherUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 public class SelectStmt {
     public List<ColumnOptAlias> columns;
@@ -86,5 +87,11 @@ public class SelectStmt {
 
     public void setOrderConditions(List<OrderByCondition> orderByConditions) {
         this.orderByConditions = orderByConditions;
+    }
+
+    public void swichJoinTables(){
+        String[] temp = tables.get(tables.size()-1).getNameAlias();
+        tables.get(tables.size()-1).setNameAlias(tables.get(tables.size()-2).getNameAlias());
+        tables.get(tables.size()-2).setNameAlias(temp);
     }
 }

@@ -25,3 +25,4 @@ application.properties
 data
 /UploadAndDetect/.idea
 /UploadAndDetect/node_modules
+/StaticAnalysis/gen

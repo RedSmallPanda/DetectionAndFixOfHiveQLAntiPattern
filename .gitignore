@@ -1,4 +1,3 @@
-/StaticAnalysis/target/
 /StaticAnalysis/pom.xml.tag
 /StaticAnalysis/pom.xml.releaseBackup
 /StaticAnalysis/pom.xml.versionsBackup
@@ -7,19 +6,17 @@
 /StaticAnalysis/dependency-reduced-pom.xml
 /StaticAnalysis/buildNumber.properties
 /StaticAnalysis/.mvn/timing.properties
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
 /StaticAnalysis/.mvn/wrapper/maven-wrapper.jar
-/StaticAnalysis/.idea
-/StaticAnalysis/*.iml
-#
-/.idea
-/DynamicAnalysis/.idea
-/DynamicAnalysis/target/
-application.properties
+/StaticAnalysis/gen
 
-/DynamicAnalysis/hivecheck/.idea
 /DynamicAnalysis/hivecheck/target
 /DynamicAnalysis/hivecheck/src/main/resources/application.properties
 /DynamicAnalysis/MLP/kaggle-house-price/__pycache__
+
+/UploadAndDetect/node_modules
+
+*.iml
 .idea
 data
+target
+application.properties

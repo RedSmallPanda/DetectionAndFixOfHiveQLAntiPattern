@@ -9,20 +9,26 @@ import java.util.Properties;
 public class GridSearch {
 
     // 执行SQL语句
-    private void execSQL(String[] conf, String sql, FileWriter f, String comment){
-        try {
+    private void execSQL(String[] conf, String sql, FileWriter f, String comment) throws IOException {
+        try{
             Class.forName("org.apache.hive.jdbc.HiveDriver");
-            FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
-            Properties props = new Properties();
-            props.load(in);
-            String url = props.getProperty("url");
-            Connection connection = DriverManager.getConnection(url,props.getProperty("username"),props.getProperty("password"));
-            Statement ps=connection.createStatement();
+        } catch (ClassNotFoundException e){
+            e.printStackTrace();
+        }
+//        FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
+//        Properties props = new Properties();
+//        props.load(in);
+//        String url = props.getProperty("url");
+        String url = "jdbc:hive2://202.120.40.28:50089/default";
+        try (
+//                Connection connection = DriverManager.getConnection(url,props.getProperty("username"),props.getProperty("password"));
+                Connection connection = DriverManager.getConnection(url, "root", "");
+                Statement ps=connection.createStatement()
+        ) {
             for(String c : conf){
                 ps.execute(c);
             }
-            ps.setQueryTimeout(30*60);
-//            ps.setQueryTimeout(1);
+            ps.setQueryTimeout(60*60);
             long startTime=System.currentTimeMillis();
             System.out.print(comment+" ");
             for(int i=0; i<1; i++){
@@ -35,11 +41,11 @@ public class GridSearch {
             System.out.println(" Time:"+ms);
 //            f.write(comment+" "+costTime+" "+ms+"\n");
             f.write(comment+","+costTime+"\n");
-            f.flush();
-            ps.close();
-            connection.close();
         } catch (Exception e) {
+            f.write(comment+","+60*60*1000+"\n");
             e.printStackTrace();
+        } finally {
+            f.flush();
         }
     }
 
@@ -105,11 +111,13 @@ public class GridSearch {
         int[] keyNum = new int[tableNameSuf.length];
         try{
             Class.forName("org.apache.hive.jdbc.HiveDriver");
-            FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
-            Properties props = new Properties();
-            props.load(in);
-            String url = props.getProperty("url");
-            Connection connection = DriverManager.getConnection(url,props.getProperty("username"),props.getProperty("password"));
+//            FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
+//            Properties props = new Properties();
+//            props.load(in);
+//            String url = props.getProperty("url");
+//            Connection connection = DriverManager.getConnection(url,props.getProperty("username"),props.getProperty("password"));
+            String url = "jdbc:hive2://202.120.40.28:50089/default";
+            Connection connection = DriverManager.getConnection(url, "root", "");
             Statement ps=connection.createStatement();
             for(int i=0; i<tableNameSuf.length; i++){
                 String tableName = tableNamePre + tableNameSuf[i];
@@ -120,10 +128,7 @@ public class GridSearch {
             ps.close();
             connection.close();
 
-            int[] reduce = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25};
-//            int[] reduce = {1, 3};
-            int[] splitMax = {128000000, 256000000};
-            // t1Num t1Key t2Num t2Key reduce splitMax time
+            // t1Num t1Key t2Num t2Key reduce time
             FileWriter f1 = new FileWriter("data/joinMlpTrainData.txt", true);
             for(int i=0; i<tableNameSuf.length; i++){
                 int t1Num = recordNum[i];
@@ -133,16 +138,10 @@ public class GridSearch {
                     int t2Key = keyNum[j];
                     String sql = "SELECT a.name, b.age FROM "+tableNamePre + tableNameSuf[i]+" a JOIN "
                             +tableNamePre + tableNameSuf[j]+" b ON a.city=b.city";
-                    for (int sMax : splitMax) {
-                        for (int r : reduce) {
-                            String[] joinConf = {"set mapred.max.split.size="+sMax,
-                                    "set mapred.reduce.tasks=" + r, "set hive.auto.convert.join=false"};
-                            execSQL(joinConf, sql, f1,
-                                    String.format("%d,%d,%d,%d,%d,%d", t1Num, t1Key, t2Num, t2Key, r, sMax));
-                        }
-                        if(sMax > t1Num*10 && sMax > t2Num*10){
-                            break;
-                        }
+                    for (int r=1; r<=40; r++) {
+                        String[] joinConf = {"set mapred.reduce.tasks=" + r, "set hive.auto.convert.join=false"};
+                        execSQL(joinConf, sql, f1,
+                                String.format("%d,%d,%d,%d,%d", t1Num, t1Key, t2Num, t2Key, r));
                     }
                 }
             }

@@ -1,6 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
+import View from '@/components/View'
+import SetConfig from '@/components/SetConfig'
+import Detect from '@/components/Detect'
+import Result from '@/components/Result'
 
 Vue.use(Router)
 
@@ -8,8 +11,26 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
+      redirect: '/detect'
+    },
+    {
+      path:'/detect',
+      name: 'Detect',
+      component: Detect
+    },
+    {
+      path:'/view',
+      name: 'View',
+      component: View
+    },
+    {
+      path:'/set',
+      name:'Set',
+      component:SetConfig
+    },{
+      path:'/result',
+      name:'Result',
+      component: Result
     }
   ]
 })

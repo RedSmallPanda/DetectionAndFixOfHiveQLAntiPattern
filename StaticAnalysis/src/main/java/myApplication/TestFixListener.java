@@ -1,18 +1,30 @@
 package myApplication;
 
-import gen.*;
+import gen.HplsqlBaseListener;
+import gen.HplsqlParser;
 import hiveUtils.HiveUtil;
 import mysqlUtils.MysqlUtil;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupFile;
+import otherUtils.OrderByCondition;
+import otherUtils.SelectStmt;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MergedListener extends HplsqlBaseListener {
+public class TestFixListener extends HplsqlBaseListener {
     private int joinNum = 0;
     private List<String> selectItemList;
     private List<Integer> groupByFlag = new ArrayList<>();
     private List<Integer> currentSelectListNum = new ArrayList<>();
     private Map<String,String> aliasTableName = new HashMap<>();
+
+    private STGroup group = new STGroupFile("src/main/java/test.stg");
+    private ST testST = group.getInstanceOf("select_stmt");
+    private SelectStmt selectStmt = new SelectStmt();  //HQL修复，重新生成Select语句
 
     @Override
     public void enterProgram(HplsqlParser.ProgramContext ctx){
@@ -28,6 +40,39 @@ public class MergedListener extends HplsqlBaseListener {
             System.out.println("不要过多使用join");
         }
         joinNum = 0;
+
+
+        //TODO:测试修复
+        testST.add("stmt",selectStmt);
+        String res = regexCheck(testST.render());
+        System.out.println("\nFixed HiveQL:\n"+res);
+    }
+
+    public String regexCheck(String s){
+        s =dateSubIntervalCheck(s);
+        return s;
+    }
+
+    // 在date_sub()中使用interval
+    public String dateSubIntervalCheck(String s){
+        s = s.toLowerCase();
+        String pattern = "(date_\\S+\\s*\\(.*,\\s*)(interval\\s*'*(\\d*)'*\\s*day)\\)";
+
+        // 创建 Pattern 对象
+        Pattern r = Pattern.compile(pattern);
+
+        // 现在创建 matcher 对象
+        Matcher m = r.matcher(s);
+        boolean printFlag = false;
+        while(m.find( )) {
+            if(!printFlag){
+                System.out.println("Be careful! Using \"interval\" in \"date_sub()\" will cause error!");
+                printFlag = true;
+            }
+            s = m.replaceFirst(m.group(1)+m.group(3)+")");
+        }
+
+        return s;
     }
 
     //anti-pattern:select的列未在group by中
@@ -55,7 +100,7 @@ public class MergedListener extends HplsqlBaseListener {
         }
     }
 
-    //anti-pattern:select的列未在group by中
+    //anti-pattern: select的列未在group by中
     @Override
     public void enterSelect_list_item(HplsqlParser.Select_list_itemContext ctx) {
         //对于每个select item,将其添加进selectItemList
@@ -66,6 +111,12 @@ public class MergedListener extends HplsqlBaseListener {
             selectItemList.add(ctx.expr().getText());
             currentSelectListNum.set(currentSelectListNum.size()-1,currentSelectListNum.get(currentSelectListNum.size()-1) + 1);
         }
+        //TODO:为了修复，构造select item
+        String alias = null;
+        if(ctx.select_list_alias() != null){
+            alias = ctx.select_list_alias().ident().getText();
+        }
+        selectStmt.addColumn(ctx.expr().getText(), alias);
     }
 
     //anti-pattern:条件允许时，没有将条目少的表放在join左侧，条目多的表放在join右侧
@@ -77,27 +128,56 @@ public class MergedListener extends HplsqlBaseListener {
         String tableName2 = "";
         String alias1 = "";
         String alias2 = "";
+        //有join操作
         if(ctx.from_join_clause().size() != 0) {
             if(ctx.from_table_clause().from_table_name_clause() != null && ctx.from_join_clause(0).from_table_clause().from_table_name_clause() != null){
                 tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
                 if(ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null){
                     alias1 = ctx.from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
-                    aliasTableName.put(alias1,tableName1);
+                }else{
+                    alias1 = null;
                 }
+                aliasTableName.put(alias1,tableName1);
+
+                //TODO:修复过程构建table token
+                selectStmt.addTable(tableName1,alias1,null,null);
                 tableName2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
                 if(ctx.from_join_clause(0).from_table_clause().from_table_name_clause().from_alias_clause() != null){
                     alias2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
-                    aliasTableName.put(alias2,tableName2);
+                }else{
+                    alias2 = null;
                 }
+                aliasTableName.put(alias2,tableName2);
+
+                //TODO:修复过程构建table token
+                selectStmt.addTable(tableName2,alias2,ctx.from_join_clause(0).from_join_type_clause().getText(),ctx.from_join_clause(0).bool_expr().getText());
+//                    System.out.println(ctx.from_join_clause(0).bool_expr().getText());
             }
 
             if(!MysqlUtil.compareTwoTableRowNum(tableName1, tableName2)){
                 //System.out.println(tableName1 + " " + tableName2);
                 //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
-                System.out.println("Please put the table containing less records on the left side of join.\n" +
+                System.out.println("Please put the table containing less records on the left side of join. " +
                         "Or check if the metaData of related tables is correct.");
+                //TODO:修复两表顺序
+                selectStmt.swichJoinTables();
             };
         }
+        //仅存在一张表
+        else if(ctx.from_table_clause().from_table_name_clause() != null){
+            tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
+            if(ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null){
+                alias1 = ctx.from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
+            }
+            else{
+                alias1 = null;
+            }
+            aliasTableName.put(alias1,tableName1);
+
+            //TODO:修复过程构建table token
+            selectStmt.addTable(tableName1,alias1,null,null);
+        }
+
         tableName = ctx.getStop().getText();
     }
 
@@ -197,6 +277,10 @@ public class MergedListener extends HplsqlBaseListener {
         else{
             boolBinaryContext = ctx.bool_expr().bool_expr(0).bool_expr_atom().bool_expr_binary();
         }
+
+        //TODO:修复构建where条件部分
+        selectStmt.setWhereCondition(boolBinaryContext.getText());
+
         HplsqlParser.ExprContext leftSymbol = boolBinaryContext.expr(0);
         HplsqlParser.ExprContext rightSymbol = boolBinaryContext.expr(1);
 
@@ -235,13 +319,42 @@ public class MergedListener extends HplsqlBaseListener {
 
     @Override
     public void enterHaving_clause(HplsqlParser.Having_clauseContext ctx){
-        System.out.println("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
+        if(groupByFlag.size() == 0){
+            selectStmt.setWhereCondition(ctx.bool_expr().getText());
+            System.out.println("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
+        }else{
+            selectStmt.setHavingCondition(ctx.bool_expr().getText());
+        }
     }
 
     // 使用order by
     @Override
     public void enterOrder_by_clause(HplsqlParser.Order_by_clauseContext ctx){
         System.out.println("Be careful! Using \"order by\" will cause poor performance! Please use \"sort by\".");
+
+        //TODO:修复过程构造Order by
+        List<ParseTree> exprContext = ctx.children;
+        //去除order 和 by
+        for(int i = 0;i<2;i++){
+            exprContext.remove(0);
+        }
+        OrderByCondition condition = new OrderByCondition();
+        for(ParseTree tree : exprContext){
+            if(tree.getText().equalsIgnoreCase("asc") || tree.getText().equalsIgnoreCase("desc")){
+                condition.setOrder(tree.getText());
+                selectStmt.addOrderByCondition(condition);
+            }
+            else if(!tree.getText().equalsIgnoreCase(",")){
+                if(condition.getOrder() == null){
+                    selectStmt.addOrderByCondition(condition);
+                }
+                condition = new OrderByCondition();
+                condition.setExpr(tree.getText());
+            }
+        }
+        if(condition.getOrder() == null){
+            selectStmt.addOrderByCondition(condition);
+        }
     }
 
     // 在date_sub()中使用interval
@@ -251,16 +364,10 @@ public class MergedListener extends HplsqlBaseListener {
     public void enterExpr_interval(HplsqlParser.Expr_intervalContext ctx){
         intervalInDatesub = true;
     }
-    
-    @Override
-    public void exitSelect_list(HplsqlParser.Select_listContext ctx){
-        if(intervalInDatesub && ctx.getText().toLowerCase().contains("date_sub(")){
-            System.out.println("Be careful! Using \"interval\" in \"date_sub()\" will cause error!");
-        }
-    }
 
     // group by不和聚集函数搭配使用
     // anti-pattern: select的列未在group by中
+    // 使用having进行过滤: 若搭配group by，则OK
     private boolean isGather = false;
 
     @Override
@@ -272,6 +379,10 @@ public class MergedListener extends HplsqlBaseListener {
         List<HplsqlParser.ExprContext> exprContext = ctx.expr();
         //遍历group后的expr列表并将其中元素从selectItemList中删除
         for(HplsqlParser.ExprContext expr:exprContext){
+
+            //TODO:修复语句构造group by条件
+            selectStmt.addGroupByCondition(expr.getText());
+
             if(selectItemList.contains(expr.getText())){
                 selectItemList.remove(expr.getText());
                 currentSelectListNum.set(currentSelectListNum.size()-1,currentSelectListNum.get(currentSelectListNum.size()-1) - 1);

@@ -69,7 +69,7 @@ public class MergedTest {
 
         // 在date_sub()中使用interval
 //        String s = "Select date_add('2020-9-16', interval '10' day) from a;";  // AP
-        String s = "Select date2, date_add(date2, interval '10' day) from a where date_add(date2, interval '5' day)>'2020-9-16';";  // AP
+        String s = "Select mrtest_10.name, mrtest_500.age FROM mrtest_10 inner JOIN mrtest_500 on mrtest_10.age = mrtest_500.age group by mrtest_10.name;";  // AP
 //        String s = "select date_sub('2020-9-16',10) From a;";
 //        String s = "select '2020-9-16' - interval '10' day From a;";
 

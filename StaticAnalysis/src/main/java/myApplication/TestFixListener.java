@@ -89,6 +89,11 @@ public class TestFixListener extends HplsqlBaseListener {
             if(currentSelectListNum.get(currentSelectListNum.size()-1) != 0){
                 System.out.println("select的列未在group by中");
             }
+            //TODO:修复语句添加group by 条件
+            for(String s:selectItemList){
+                selectStmt.addGroupByCondition(s);
+            }
+
             groupByFlag.remove(groupByFlag.size() - 1);
             currentSelectListNum.remove(currentSelectListNum.size()-1);
         }
@@ -387,6 +392,7 @@ public class TestFixListener extends HplsqlBaseListener {
                 selectItemList.remove(expr.getText());
                 currentSelectListNum.set(currentSelectListNum.size()-1,currentSelectListNum.get(currentSelectListNum.size()-1) - 1);
             }
+
         }
     }
 

@@ -12,6 +12,7 @@ import otherUtils.OrderByCondition;
 import otherUtils.SelectStmt;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TestFixListener extends HplsqlBaseListener {
@@ -43,7 +44,35 @@ public class TestFixListener extends HplsqlBaseListener {
 
         //TODO:测试修复
         testST.add("stmt",selectStmt);
-        System.out.println("\nFixed HiveQL:\n"+testST.render());
+        String res = regexCheck(testST.render());
+        System.out.println("\nFixed HiveQL:\n"+res);
+    }
+
+    public String regexCheck(String s){
+        s =dateSubIntervalCheck(s);
+        return s;
+    }
+
+    // 在date_sub()中使用interval
+    public String dateSubIntervalCheck(String s){
+        s = s.toLowerCase();
+        String pattern = "(date_\\S+\\s*\\(.*,\\s*)(interval\\s*'*(\\d*)'*\\s*day)\\)";
+
+        // 创建 Pattern 对象
+        Pattern r = Pattern.compile(pattern);
+
+        // 现在创建 matcher 对象
+        Matcher m = r.matcher(s);
+        boolean printFlag = false;
+        while(m.find( )) {
+            if(!printFlag){
+                System.out.println("Be careful! Using \"interval\" in \"date_sub()\" will cause error!");
+                printFlag = true;
+            }
+            s = m.replaceFirst(m.group(1)+m.group(3)+")");
+        }
+
+        return s;
     }
 
     //anti-pattern:select的列未在group by中
@@ -334,13 +363,6 @@ public class TestFixListener extends HplsqlBaseListener {
     @Override
     public void enterExpr_interval(HplsqlParser.Expr_intervalContext ctx){
         intervalInDatesub = true;
-    }
-    
-    @Override
-    public void exitSelect_list(HplsqlParser.Select_listContext ctx){
-        if(intervalInDatesub && ctx.getText().toLowerCase().contains("date_sub(")){
-            System.out.println("Be careful! Using \"interval\" in \"date_sub()\" will cause error!");
-        }
     }
 
     // group by不和聚集函数搭配使用

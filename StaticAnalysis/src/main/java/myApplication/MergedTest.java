@@ -61,8 +61,17 @@ public class MergedTest {
 //        String s = "SELECT t1.name, t2.age FROM mrtest_500 as t1 JOIN mrtest_10 as t2 ON t1.city=t2.city;";  // AP
 
         // 使用having进行过滤 https://blog.csdn.net/high2011/article/details/82686858
-        String s = "SELECT id, avg(age) avaAge from table001 group by id having id >='20180901';";
+//        String s = "SELECT id, avg(age) avaAge from table001 group by id having id >='20180901';";
 //        String s = "SELECT id from table001 having id >='20180901';";  // AP
+
+        // subselect
+//        String s = "SELECT id from (select id from t1 group by id having id >='20180901') as t2;";
+
+        // 在date_sub()中使用interval
+//        String s = "Select date_add('2020-9-16', interval '10' day) from a;";  // AP
+        String s = "Select date2, date_add(date2, interval '10' day) from a where date_add(date2, interval '5' day)>'2020-9-16';";  // AP
+//        String s = "select date_sub('2020-9-16',10) From a;";
+//        String s = "select '2020-9-16' - interval '10' day From a;";
 
         astCheck(s);
 

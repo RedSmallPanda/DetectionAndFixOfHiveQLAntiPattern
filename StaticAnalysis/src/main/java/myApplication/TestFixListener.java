@@ -56,12 +56,8 @@ public class TestFixListener extends HplsqlBaseListener {
     // 在date_sub()中使用interval
     public String dateSubIntervalCheck(String s){
         s = s.toLowerCase();
-        String pattern = "(date_\\S+\\s*\\(.*,\\s*)(interval\\s*'*(\\d*)'*\\s*day)\\)";
-
-        // 创建 Pattern 对象
+        String pattern = "(date_\\S+?\\s*\\(.+?,\\s*)(interval\\s*'*(\\d*)'*\\s*day)\\)";
         Pattern r = Pattern.compile(pattern);
-
-        // 现在创建 matcher 对象
         Matcher m = r.matcher(s);
         boolean printFlag = false;
         while(m.find( )) {
@@ -69,7 +65,7 @@ public class TestFixListener extends HplsqlBaseListener {
                 System.out.println("Be careful! Using \"interval\" in \"date_sub()\" will cause error!");
                 printFlag = true;
             }
-            s = m.replaceFirst(m.group(1)+m.group(3)+")");
+            s = s.replaceFirst(m.group(2), m.group(3));
         }
 
         return s;
@@ -165,7 +161,7 @@ public class TestFixListener extends HplsqlBaseListener {
                 System.out.println("Please put the table containing less records on the left side of join. " +
                         "Or check if the metaData of related tables is correct.");
                 //TODO:修复两表顺序
-                selectStmt.swichJoinTables();
+                selectStmt.switchJoinTables();
             };
         }
         //仅存在一张表

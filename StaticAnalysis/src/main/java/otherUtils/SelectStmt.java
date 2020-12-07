@@ -89,7 +89,7 @@ public class SelectStmt {
         this.orderByConditions = orderByConditions;
     }
 
-    public void swichJoinTables(){
+    public void switchJoinTables(){
         String[] temp = tables.get(tables.size()-1).getNameAlias();
         tables.get(tables.size()-1).setNameAlias(tables.get(tables.size()-2).getNameAlias());
         tables.get(tables.size()-2).setNameAlias(temp);

@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 from torch import nn
-from utils import train_model, pred
+from utils import train_model, pred,pred_train
 from Model import get_model
 
 train = pd.read_csv('./all/joinMlpTrainTrainData_notest.csv')
@@ -68,5 +68,6 @@ train_model(net, train_features, train_labels, valid_features, valid_labels, epo
 train_model(net, train_valid_features, train_valid_labels, None, None, 1,
             batch_size, lr, wd, use_gpu)
 
-torch.save(net, "./hive_pred_model.pkl")
+torch.save(net, "./hive_pred_model2.pkl")
 pred(net, test, test_features)
+pred_train(net,train,train_features,"train")

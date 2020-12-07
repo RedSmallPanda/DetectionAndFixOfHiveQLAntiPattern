@@ -9,6 +9,7 @@
 /StaticAnalysis/.mvn/wrapper/maven-wrapper.jar
 /StaticAnalysis/gen
 
+/DynamicAnalysis/hivecheck/.idea
 /DynamicAnalysis/hivecheck/target
 /DynamicAnalysis/hivecheck/src/main/resources/application.properties
 /DynamicAnalysis/MLP/kaggle-house-price/__pycache__

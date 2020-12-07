@@ -55,14 +55,20 @@ public class MergedTest {
         //String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";  // 在有分区的表上没有使用分区查询
 //        String ss = "SELECT n.name, a.age FROM mrtest_70kskew n JOIN mrtest_70kskew a ON n.loc=a.loc;";  // 在有分区的表上没有使用分区查询
 //        String s = stringUtil.join2innerJoin(ss);
-        String s = "SELECT t1.name, t2.age FROM mrtest_10 as t1 JOIN mrtest_500 as t2 ON t1.city=t2.city;";
-//        String s = "SELECT t1.name, t2.age FROM mrtest_500 as t1 JOIN mrtest_10 as t2 ON t1.city=t2.city;";
+
+        // 条件允许时，没有将条目少的表放在join左侧，条目多的表放在join右侧
+//        String s = "SELECT t1.name, t2.age FROM mrtest_10 as t1 JOIN mrtest_500 as t2 ON t1.city=t2.city;";
+//        String s = "SELECT t1.name, t2.age FROM mrtest_500 as t1 JOIN mrtest_10 as t2 ON t1.city=t2.city;";  // AP
+
+        // 使用having进行过滤 https://blog.csdn.net/high2011/article/details/82686858
+        String s = "SELECT id, avg(age) avaAge from table001 group by id having id >='20180901';";
+//        String s = "SELECT id from table001 having id >='20180901';";  // AP
 
         astCheck(s);
 
         //System.out.println(tree.toStringTree(parser));
 
         //配置项检测
-        configCheck();
+//        configCheck();
     }
 }

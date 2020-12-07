@@ -43,7 +43,7 @@ public class TestFixListener extends HplsqlBaseListener {
 
         //TODO:测试修复
         testST.add("stmt",selectStmt);
-        System.out.println(testST.render());
+        System.out.println("\nFixed HiveQL:\n"+testST.render());
     }
 
     //anti-pattern:select的列未在group by中
@@ -71,7 +71,7 @@ public class TestFixListener extends HplsqlBaseListener {
         }
     }
 
-    //anti-pattern:select的列未在group by中
+    //anti-pattern: select的列未在group by中
     @Override
     public void enterSelect_list_item(HplsqlParser.Select_list_itemContext ctx) {
         //对于每个select item,将其添加进selectItemList
@@ -79,13 +79,15 @@ public class TestFixListener extends HplsqlBaseListener {
             return;
         }
         if(ctx.expr().expr_agg_window_func() == null) {
-
-            //TODO:为了修复，构造select item
-            selectStmt.addColumn(ctx.expr().getText(),null);
-
             selectItemList.add(ctx.expr().getText());
             currentSelectListNum.set(currentSelectListNum.size()-1,currentSelectListNum.get(currentSelectListNum.size()-1) + 1);
         }
+        //TODO:为了修复，构造select item
+        String alias = null;
+        if(ctx.select_list_alias() != null){
+            alias = ctx.select_list_alias().ident().getText();
+        }
+        selectStmt.addColumn(ctx.expr().getText(), alias);
     }
 
     //anti-pattern:条件允许时，没有将条目少的表放在join左侧，条目多的表放在join右侧
@@ -97,50 +99,56 @@ public class TestFixListener extends HplsqlBaseListener {
         String tableName2 = "";
         String alias1 = "";
         String alias2 = "";
-        //多于一张表
+        //有join操作
         if(ctx.from_join_clause().size() != 0) {
             if(ctx.from_table_clause().from_table_name_clause() != null && ctx.from_join_clause(0).from_table_clause().from_table_name_clause() != null){
                 tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
                 if(ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null){
                     alias1 = ctx.from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
-                    aliasTableName.put(alias1,tableName1);
-
-                    //TODO:修复过程构建table token
-                    selectStmt.addTable(tableName1,alias1,null,null);
+                }else{
+                    alias1 = null;
                 }
+                aliasTableName.put(alias1,tableName1);
+
+                //TODO:修复过程构建table token
+                selectStmt.addTable(tableName1,alias1,null,null);
                 tableName2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
                 if(ctx.from_join_clause(0).from_table_clause().from_table_name_clause().from_alias_clause() != null){
                     alias2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
-                    aliasTableName.put(alias2,tableName2);
-
-                    //TODO:修复过程构建table token
-                    selectStmt.addTable(tableName2,alias2,ctx.from_join_clause(0).from_join_type_clause().getText(),ctx.from_join_clause(0).bool_expr().getText());
-//                    System.out.println(ctx.from_join_clause(0).bool_expr().getText());
+                }else{
+                    alias2 = null;
                 }
+                aliasTableName.put(alias2,tableName2);
+
+                //TODO:修复过程构建table token
+                selectStmt.addTable(tableName2,alias2,ctx.from_join_clause(0).from_join_type_clause().getText(),ctx.from_join_clause(0).bool_expr().getText());
+//                    System.out.println(ctx.from_join_clause(0).bool_expr().getText());
             }
 
             if(!MysqlUtil.compareTwoTableRowNum(tableName1, tableName2)){
                 //System.out.println(tableName1 + " " + tableName2);
                 //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
-                System.out.println("Please put the table containing less records on the left side of join.\n" +
+                System.out.println("Please put the table containing less records on the left side of join. " +
                         "Or check if the metaData of related tables is correct.");
                 //TODO:修复两表顺序
                 selectStmt.swichJoinTables();
             };
         }
         //仅存在一张表
-        else{
-            if(ctx.from_table_clause().from_table_name_clause() != null){
-                tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
-                if(ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null){
-                    alias1 = ctx.from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
-                    aliasTableName.put(alias1,tableName1);
-
-                    //TODO:修复过程构建table token
-                    selectStmt.addTable(tableName1,alias1,null,null);
-                }
+        else if(ctx.from_table_clause().from_table_name_clause() != null){
+            tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
+            if(ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null){
+                alias1 = ctx.from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
             }
+            else{
+                alias1 = null;
+            }
+            aliasTableName.put(alias1,tableName1);
+
+            //TODO:修复过程构建table token
+            selectStmt.addTable(tableName1,alias1,null,null);
         }
+
         tableName = ctx.getStop().getText();
     }
 
@@ -282,8 +290,12 @@ public class TestFixListener extends HplsqlBaseListener {
 
     @Override
     public void enterHaving_clause(HplsqlParser.Having_clauseContext ctx){
-        selectStmt.setHavingCondition(ctx.bool_expr().getText());
-        System.out.println("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
+        if(groupByFlag.size() == 0){
+            selectStmt.setWhereCondition(ctx.bool_expr().getText());
+            System.out.println("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
+        }else{
+            selectStmt.setHavingCondition(ctx.bool_expr().getText());
+        }
     }
 
     // 使用order by
@@ -333,6 +345,7 @@ public class TestFixListener extends HplsqlBaseListener {
 
     // group by不和聚集函数搭配使用
     // anti-pattern: select的列未在group by中
+    // 使用having进行过滤: 若搭配group by，则OK
     private boolean isGather = false;
 
     @Override

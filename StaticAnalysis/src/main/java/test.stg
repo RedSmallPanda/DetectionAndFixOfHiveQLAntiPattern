@@ -1,5 +1,5 @@
 select_stmt(stmt) ::= <%
-Select <stmt.columns:column_opt_alias();separator=","> From <stmt.tables:from_join_clause();separator=" ">
+Select <stmt.columns:column_opt_alias();separator=","> From <stmt.tables:from_join_clause()>
 <stmt:where_clause()><stmt:group_by_clause()><stmt:having_clause()><stmt:order_by_clause()>
 %>
 

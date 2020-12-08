@@ -2,10 +2,7 @@ package mysqlUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.*;
 
 public class MysqlUtil {
@@ -190,17 +187,28 @@ public class MysqlUtil {
         return false;
     }
 
-    public static boolean usePartitionCorrect(String tableName, List<String> whereItemList){
-        try {
+    public static boolean usePartitionCorrect(String tableName, List<String> whereItemList) {
+        FileInputStream in = null;
+        Properties props = null;
+        String url = null;
+        try{
             Class.forName("com.mysql.cj.jdbc.Driver");
             //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
-            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
-            Properties props = new Properties();
+            in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            props = new Properties();
             props.load(in);
-            String url = props.getProperty("mysqlUrl");
-            Connection connection = DriverManager.getConnection(url,props.getProperty("mysqlUsername"),props.getProperty("mysqlPassword"));
-            PreparedStatement ps=connection.prepareStatement("select TBL_ID from TBLS where TBL_NAME=\""+tableName+"\"");
-            ResultSet r=ps.executeQuery();
+            url = props.getProperty("mysqlUrl");
+        } catch (Exception e){
+            System.out.println("Fail to init hive jdbc.");
+            e.printStackTrace();
+            return true;
+        }
+
+        try (
+                Connection connection = DriverManager.getConnection(url,props.getProperty("mysqlUsername"),props.getProperty("mysqlPassword"));
+                Statement ps = connection.createStatement()
+        ) {
+            ResultSet r=ps.executeQuery("select TBL_ID from TBLS where TBL_NAME=\""+tableName+"\"");
             String tableID = "";
             while(r.next()){
                 tableID = r.getString(1);
@@ -208,11 +216,10 @@ public class MysqlUtil {
             if(tableID.equals("")){
                 return true;
             }
-            PreparedStatement ps2=connection.prepareStatement("select PKEY_NAME from PARTITION_KEYS where TBL_ID=\""+tableID+"\"");
-            ResultSet r2=ps2.executeQuery();
+            r=ps.executeQuery("select PKEY_NAME from PARTITION_KEYS where TBL_ID=\"?\"");
             HashSet<String> partCol = new HashSet<String>();
-            while(r2.next()){
-                partCol.add(r2.getString(1));
+            while(r.next()){
+                partCol.add(r.getString(1));
             }
             if(partCol.isEmpty()){
                 return true;
@@ -222,9 +229,6 @@ public class MysqlUtil {
                     return true;
                 }
             }
-            ps.close();
-            ps2.close();
-            connection.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

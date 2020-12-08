@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import myApplication.MergedTest;
 
-
 @RestController
 public class staticCheckController {
     @RequestMapping(value="/astCheck",method = RequestMethod.GET)

@@ -243,7 +243,7 @@ public class TestFixListener extends HplsqlBaseListener {
 
             //TODO:处理别名的情况
             //判断是否将不同数据类型字段进行join
-            if(MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(),rightSymbol.getChild(0).getText()) == false){
+            if(!MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(), rightSymbol.getChild(0).getText())){
                 System.out.println("不要将不同数据类型字段进行join");
             }
 
@@ -465,8 +465,18 @@ public class TestFixListener extends HplsqlBaseListener {
     private String tableName;
     @Override
     public void exitSubselect_stmt(HplsqlParser.Subselect_stmtContext ctx){
-        if(!MysqlUtil.usePartitionCorrect(tableName, whereItemList)){
-            System.out.println("Be careful! 在有分区的表上没有使用分区查询!");
+        HashSet<String> partCol = MysqlUtil.partitionCheck(tableName, whereItemList);
+        if(partCol != null){
+            System.out.print("Be careful! 在有分区的表上没有使用分区查询! 分区列：");
+            StringBuilder whereCondition = new StringBuilder(selectStmt.getWhereCondition());
+            for(String part : partCol){
+                System.out.print(part+", ");
+                if(whereCondition.length() != 0){
+                    whereCondition.append(" and ");
+                }
+                whereCondition.append(part).append("?");
+            }
+            selectStmt.setWhereCondition(whereCondition.toString());
         }
     }
 

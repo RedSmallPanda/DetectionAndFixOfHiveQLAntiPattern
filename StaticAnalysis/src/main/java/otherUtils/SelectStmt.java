@@ -17,6 +17,7 @@ public class SelectStmt {
         tables = new ArrayList<>();
         groupByConditions = new ArrayList<>();
         orderByConditions = new ArrayList<>();
+        whereCondition = "";
     }
 
     public SelectStmt(List<ColumnOptAlias> columns, List<FromJoinTable> tables) {

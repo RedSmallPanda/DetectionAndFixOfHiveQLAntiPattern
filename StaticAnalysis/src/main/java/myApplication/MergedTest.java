@@ -65,7 +65,9 @@ public class MergedTest {
 //        String s = "select '2020-9-16' - interval '10' day From a;";
 
         // 在有分区的表上没有使用分区查询
-        String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";
+//        String s = "select name from partitiontable;";  // AP
+//        String s = "select name from partitiontable where name='changzhou';";  // AP
+        String s = "select name from partitiontable where city='changzhou';";
 
         s = stringUtil.join2innerJoin(s);
         astCheck(s);

@@ -62,7 +62,8 @@ public class HiveUtil {
             ps.close();
             connection.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("May not find the table.");
+//            e.printStackTrace();
         }
         return(maxNum > 5*average);
     }

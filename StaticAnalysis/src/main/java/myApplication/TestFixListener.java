@@ -4,7 +4,9 @@ import gen.HplsqlBaseListener;
 import gen.HplsqlParser;
 import hiveUtils.HiveUtil;
 import mysqlUtils.MysqlUtil;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.SyntaxTree;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
@@ -255,7 +257,7 @@ public class TestFixListener extends HplsqlBaseListener {
                 String column2 = table2[1];
                 tableName1 = aliasTableName.get(tableName1) == null?tableName1:aliasTableName.get(tableName1);
                 tableName2 = aliasTableName.get(tableName2) == null?tableName2:aliasTableName.get(tableName2);
-                if(HiveUtil.isDataImbalanced(tableName1,column1,tableName2,column2) == true){
+                if(HiveUtil.isDataImbalanced(tableName1, column1, tableName2, column2)){
                     System.out.println("可能存在数据倾斜！");
                 }
             }
@@ -318,13 +320,28 @@ public class TestFixListener extends HplsqlBaseListener {
         }
     }
 
+    public String getChildString(ParseTree tree) {
+        if (tree.getChildCount() == 0) {
+            return "";
+        } else {
+            StringBuilder builder = new StringBuilder();
+
+            for(int i = 0; i < tree.getChildCount(); ++i) {
+                builder.append(tree.getChild(i).getText());
+                builder.append(" ");
+            }
+
+            return builder.toString();
+        }
+    }
+
     @Override
     public void enterHaving_clause(HplsqlParser.Having_clauseContext ctx){
         if(groupByFlag.size() == 0){
             selectStmt.setWhereCondition(ctx.bool_expr().getText());
             System.out.println("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
         }else{
-            selectStmt.setHavingCondition(ctx.bool_expr().getText());
+            selectStmt.setHavingCondition(getChildString(ctx.bool_expr().getChild(0).getChild(0)));
         }
     }
 

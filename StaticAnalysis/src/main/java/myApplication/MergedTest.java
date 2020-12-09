@@ -4,6 +4,11 @@ import gen.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import mysqlUtils.MysqlUtil;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupFile;
+import otherUtils.TestRecursion;
+import otherUtils.TestRecursionUtil;
 import otherUtils.stringUtil;
 
 public class MergedTest {
@@ -67,10 +72,12 @@ public class MergedTest {
         // 在有分区的表上没有使用分区查询
 //        String s = "select name from partitiontable;";  // AP
 //        String s = "select name from partitiontable where name='changzhou';";  // AP
-        String s = "select name from partitiontable where city='changzhou';";
 
+        String s = "select p1.name from mrtest_500 p1 join mrtest_50 p2 on p1.city = p2.city where p1.city = 1;";
+//
         s = stringUtil.join2innerJoin(s);
         astCheck(s);
+
 
         //System.out.println(tree.toStringTree(parser));
 

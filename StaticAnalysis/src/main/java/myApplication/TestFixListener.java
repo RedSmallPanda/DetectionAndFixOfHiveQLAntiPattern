@@ -88,7 +88,7 @@ public class TestFixListener extends HplsqlBaseListener {
         if(groupByFlag.size() > 0){
             //if(selectItemList.size() != 0){
             if(currentSelectListNum.get(currentSelectListNum.size()-1) != 0){
-                System.out.println("select的列未在group by中");
+                System.out.println("Warning! Column selected should be concluded in group by");
             }
             //TODO:修复语句添加group by 条件
             for(String s:selectItemList){
@@ -534,10 +534,17 @@ public class TestFixListener extends HplsqlBaseListener {
     public void exitSubselect_stmt(HplsqlParser.Subselect_stmtContext ctx){
         HashSet<String> partCol = MysqlUtil.partitionCheck(tableName, whereItemList);
         if(partCol != null){
-            System.out.print("Be careful! 在有分区的表上没有使用分区查询! 分区列：");
-            StringBuilder whereCondition = new StringBuilder(selectStmt.getWhereCondition());
+            System.out.print("Warning! Please utilize partition in the query. Partition: ");
+            String whereCd = selectStmt.getWhereCondition();
+            StringBuilder whereCondition = new StringBuilder(whereCd==null ? "" : whereCd);
+            boolean isFirst = true;
             for(String part : partCol){
-                System.out.print(part+", ");
+                if(isFirst){
+                    System.out.print(part);
+                    isFirst = false;
+                }else{
+                    System.out.print(", "+part);
+                }
                 if(whereCondition.length() != 0){
                     whereCondition.append(" and ");
                 }

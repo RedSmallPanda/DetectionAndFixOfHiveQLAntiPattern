@@ -7,8 +7,6 @@ import mysqlUtils.MysqlUtil;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
-import otherUtils.TestRecursion;
-import otherUtils.TestRecursionUtil;
 import otherUtils.stringUtil;
 
 public class MergedTest {
@@ -73,11 +71,13 @@ public class MergedTest {
         // 在有分区的表上没有使用分区查询
 //        String s = "select name from partitiontable;";  // AP
 //        String s = "select name from partitiontable where name='cn';";  // AP
-        String s = "select name from partitiontable where city='changzhou';";
+//        String s = "select name from partitiontable where city='changzhou';";
 
         // select的列未在group by中
 //        String s = "select name, city, avg(age) from t group by name;";  // AP
 //        String s = "select name, city, avg(age) from t group by city, name;";
+
+        String s = "select p1.name from mrtest_500 p1 join (select city from mrtest_50) p2 on p1.city = p2.city where p1.city = 1;";
 
         s = stringUtil.join2innerJoin(s);
         astCheck(s);

@@ -11,6 +11,7 @@ public class SelectStmt {
     public List<String> groupByConditions;
     public String havingCondition;
     public List<OrderByCondition> orderByConditions;
+    public Boolean isDataImbalanced;
 
     public SelectStmt(){
         columns = new ArrayList<>();
@@ -29,8 +30,12 @@ public class SelectStmt {
         columns.add(new ColumnOptAlias(columnName,alias));
     }
 
-    public void addTable(String tableName,String alias,String joinType,String onCondition){
-        tables.add(new FromJoinTable(new TableOptAlias(tableName,alias),joinType,onCondition));
+//    public void addTable(String tableName,String alias,String joinType,String onCondition){
+//        tables.add(new FromJoinTable(new TableOptAlias(tableName,alias),joinType,onCondition));
+//    }
+
+    public void addTable(FromJoinTable table){
+        tables.add(table);
     }
 
     public void addGroupByCondition(String condition){
@@ -93,5 +98,13 @@ public class SelectStmt {
         String[] temp = tables.get(tables.size()-1).getNameAlias();
         tables.get(tables.size()-1).setNameAlias(tables.get(tables.size()-2).getNameAlias());
         tables.get(tables.size()-2).setNameAlias(temp);
+    }
+
+    public Boolean getDataImbalanced() {
+        return isDataImbalanced;
+    }
+
+    public void setDataImbalanced(Boolean dataImbalanced) {
+        isDataImbalanced = dataImbalanced;
     }
 }

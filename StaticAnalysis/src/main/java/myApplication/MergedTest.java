@@ -4,6 +4,9 @@ import gen.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import mysqlUtils.MysqlUtil;
+import org.stringtemplate.v4.ST;
+import org.stringtemplate.v4.STGroup;
+import org.stringtemplate.v4.STGroupFile;
 import otherUtils.stringUtil;
 
 public class MergedTest {
@@ -47,6 +50,7 @@ public class MergedTest {
         // 条件允许时，没有将条目少的表放在join左侧，条目多的表放在join右侧
 //        String s = "SELECT t1.name, t2.age FROM mrtest_10 as t1 JOIN mrtest_500 as t2 ON t1.city=t2.city;";
 //        String s = "SELECT t1.name, t2.age FROM mrtest_500 as t1 JOIN mrtest_10 as t2 ON t1.city=t2.city;";  // AP
+//        String s = "select p1.name from mrtest_500 p1 join mrtest_50 p2 on p1.city = p2.city where p1.city = 1;";  // AP
 
         // 使用having进行过滤 https://blog.csdn.net/high2011/article/details/82686858
 //        String s = "SELECT id, avg(age) avaAge from table001 group by id having id >='20180901';";
@@ -65,10 +69,19 @@ public class MergedTest {
 //        String s = "select '2020-9-16' - interval '10' day From a;";
 
         // 在有分区的表上没有使用分区查询
-        String s = "select partitiontable.col1,test.col2 from partitiontable left join pokes on pokes.foo = 100;";
+//        String s = "select name from partitiontable;";  // AP
+//        String s = "select name from partitiontable where name='cn';";  // AP
+//        String s = "select name from partitiontable where city='changzhou';";
+
+        // select的列未在group by中
+//        String s = "select name, city, avg(age) from t group by name;";  // AP
+//        String s = "select name, city, avg(age) from t group by city, name;";
+
+        String s = "select p1.name from mrtest_500 p1 join (select city from mrtest_50) p2 on p1.city = p2.city where p1.city = 1;";
 
         s = stringUtil.join2innerJoin(s);
         astCheck(s);
+
 
         //System.out.println(tree.toStringTree(parser));
 

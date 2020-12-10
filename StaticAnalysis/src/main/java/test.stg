@@ -19,6 +19,11 @@ table_opt_alias(table) ::= <%
 <endif>
 %>
 
+//处理subselect
+subselect_clause(stmt) ::= <%
+(<stmt:select_stmt()>)
+%>
+
 order_by_condition(condition) ::= <%
 <condition.expr>
 <if(condition.order)>
@@ -31,7 +36,15 @@ from_join_clause(table) ::= <%
 <if(table.joinType)>
 <\ ><table.joinType><\ >
 <endif>
+<if(table.tableNameAlias)>
 <table.tableNameAlias:table_opt_alias()>
+<endif>
+<if(table.isSubSelect)>
+<table.subSelectStmt:subselect_clause()>
+<if(table.subSelectAlias)>
+<\ ><table.subSelectAlias>
+<endif>
+<endif>
 <if(table.onCondition)>
 <\ >on <table.onCondition>
 <endif>

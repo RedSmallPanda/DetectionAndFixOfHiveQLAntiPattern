@@ -335,7 +335,8 @@ public class MergedListener extends HplsqlBaseListener {
     private String tableName;
     @Override
     public void exitSubselect_stmt(HplsqlParser.Subselect_stmtContext ctx){
-        if(!MysqlUtil.usePartitionCorrect(tableName, whereItemList)){
+        HashSet<String> partCol = MysqlUtil.partitionCheck(tableName, whereItemList);
+        if(partCol != null){
             System.out.println("Be careful! 在有分区的表上没有使用分区查询!");
         }
     }

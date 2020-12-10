@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.tree.SyntaxTree;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
+import otherUtils.FromJoinTable;
 import otherUtils.OrderByCondition;
 import otherUtils.SelectStmt;
 
@@ -26,11 +27,13 @@ public class TestFixListener extends HplsqlBaseListener {
 
     private STGroup group = new STGroupFile("src/main/java/test.stg");
     private ST testST = group.getInstanceOf("select_stmt");
+    private List<SelectStmt> selectStmtList = new ArrayList<>(); //考虑到可能存在subselect语句，因此用列表存储所有出现的select_stmt
     private SelectStmt selectStmt = new SelectStmt();  //HQL修复，重新生成Select语句
 
     @Override
     public void enterProgram(HplsqlParser.ProgramContext ctx){
         selectItemList = new ArrayList<>();
+        selectStmtList.add(selectStmt);
     }
 
     //anti-pattern:不要过多使用join
@@ -85,7 +88,7 @@ public class TestFixListener extends HplsqlBaseListener {
         if(groupByFlag.size() > 0){
             //if(selectItemList.size() != 0){
             if(currentSelectListNum.get(currentSelectListNum.size()-1) != 0){
-                System.out.println("select的列未在group by中");
+                System.out.println("Warning! Column selected should be concluded in group by");
             }
             //TODO:修复语句添加group by 条件
             for(String s:selectItemList){
@@ -133,6 +136,7 @@ public class TestFixListener extends HplsqlBaseListener {
         String alias2 = "";
         //有join操作
         if(ctx.from_join_clause().size() != 0) {
+            //两张表都是普通的表
             if(ctx.from_table_clause().from_table_name_clause() != null && ctx.from_join_clause(0).from_table_clause().from_table_name_clause() != null){
                 tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
                 if(ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null){
@@ -143,28 +147,48 @@ public class TestFixListener extends HplsqlBaseListener {
                 aliasTableName.put(alias1,tableName1);
 
                 //TODO:修复过程构建table token
-                selectStmt.addTable(tableName1,alias1,null,null);
+                FromJoinTable tempTable1 = new FromJoinTable();
+                tempTable1.setNameAlias(new String[]{tableName1,alias1});
+                selectStmt.addTable(tempTable1);
                 tableName2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().table_name().getText();
                 if(ctx.from_join_clause(0).from_table_clause().from_table_name_clause().from_alias_clause() != null){
                     alias2 = ctx.from_join_clause(0).from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
                 }else{
                     alias2 = null;
                 }
+                FromJoinTable tempTable2 = new FromJoinTable();
+                tempTable2.setNameAlias(new String[]{tableName2,alias2});
                 aliasTableName.put(alias2,tableName2);
 
                 //TODO:修复过程构建table token
-                selectStmt.addTable(tableName2,alias2,ctx.from_join_clause(0).from_join_type_clause().getText(),ctx.from_join_clause(0).bool_expr().getText());
-//                    System.out.println(ctx.from_join_clause(0).bool_expr().getText());
-            }
+                tempTable2.setJoinType(ctx.from_join_clause(0).from_join_type_clause().getText());
+                tempTable2.setOnCondition(ctx.from_join_clause(0).bool_expr().getText());
+//                selectStmt.addTable(tempTable2);
 
-            if(!MysqlUtil.compareTwoTableRowNum(tableName1, tableName2)){
-                //System.out.println(tableName1 + " " + tableName2);
-                //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
-                System.out.println("Please put the table containing less records on the left side of join. " +
-                        "Or check if the metaData of related tables is correct.");
-                //TODO:修复两表顺序
-                selectStmt.switchJoinTables();
-            };
+
+                if(!MysqlUtil.compareTwoTableRowNum(tableName1, tableName2)){
+                    //System.out.println(tableName1 + " " + tableName2);
+                    //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
+                    System.out.println("Please put the table containing less records on the left side of join. " +
+                            "Or check if the metaData of related tables is correct.");
+                    selectStmt.setDataImbalanced(true);
+                };
+
+            }
+            //有subselect的情况
+            else if(ctx.from_table_clause().from_table_name_clause() != null){
+                tableName1 = ctx.from_table_clause().from_table_name_clause().table_name().getText();
+                if(ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null){
+                    alias1 = ctx.from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
+                }else{
+                    alias1 = null;
+                }
+                aliasTableName.put(alias1,tableName1);
+
+                FromJoinTable tempTable1 = new FromJoinTable();
+                tempTable1.setNameAlias(new String[]{tableName1,alias1});
+                selectStmt.addTable(tempTable1);
+            }
         }
         //仅存在一张表
         else if(ctx.from_table_clause().from_table_name_clause() != null){
@@ -178,7 +202,9 @@ public class TestFixListener extends HplsqlBaseListener {
             aliasTableName.put(alias1,tableName1);
 
             //TODO:修复过程构建table token
-            selectStmt.addTable(tableName1,alias1,null,null);
+            FromJoinTable tempTable1 = new FromJoinTable();
+            tempTable1.setNameAlias(new String[]{tableName1,alias1});
+            selectStmt.addTable(tempTable1);
         }
 
         tableName = ctx.getStop().getText();
@@ -201,6 +227,47 @@ public class TestFixListener extends HplsqlBaseListener {
     public void enterFrom_join_clause(HplsqlParser.From_join_clauseContext ctx) {
         //累加join个数
         joinNum = joinNum + 1;
+
+        //TODO:修复构造from_join_clause
+        if(ctx.from_table_clause().from_table_name_clause() != null) {
+            String tableName = ctx.from_table_clause().from_table_name_clause().table_name().getText();
+            String tableAlias;
+            if (ctx.from_table_clause().from_table_name_clause().from_alias_clause() != null) {
+                tableAlias = ctx.from_table_clause().from_table_name_clause().from_alias_clause().ident().getText();
+            } else {
+                tableAlias = null;
+            }
+            FromJoinTable tempTable = new FromJoinTable();
+            tempTable.setNameAlias(new String[]{tableName, tableAlias});
+            tempTable.setJoinType(ctx.from_join_type_clause().getText());
+            tempTable.setOnCondition(ctx.bool_expr().getText());
+            selectStmt.addTable(tempTable);
+
+            //TODO:修复两表顺序
+            if(selectStmt.getDataImbalanced() == true) {
+                selectStmt.switchJoinTables();
+            }
+        }
+        else if(ctx.from_table_clause().from_subselect_clause() != null){
+            String subSelectAlias;
+            if (ctx.from_table_clause().from_subselect_clause().from_alias_clause() != null) {
+                subSelectAlias = ctx.from_table_clause().from_subselect_clause().from_alias_clause().ident().getText();
+            } else {
+                subSelectAlias = null;
+            }
+            FromJoinTable tempTable = new FromJoinTable();
+            SelectStmt currSelectStmt = new SelectStmt();
+            selectStmtList.add(currSelectStmt);
+            tempTable.setSubSelectStmt(currSelectStmt);
+            tempTable.setSubSelectAlias(subSelectAlias);
+            tempTable.setSubSelect(true);
+            tempTable.setJoinType(ctx.from_join_type_clause().getText());
+            tempTable.setOnCondition(ctx.bool_expr().getText());
+            selectStmt.addTable(tempTable);
+            selectStmt = currSelectStmt;
+        }
+
+
 
         if(ctx.T_ON() != null) {
             //判断join子句中是否存在 + / - / * / /
@@ -243,7 +310,7 @@ public class TestFixListener extends HplsqlBaseListener {
 
             //TODO:处理别名的情况
             //判断是否将不同数据类型字段进行join
-            if(MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(),rightSymbol.getChild(0).getText()) == false){
+            if(!MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(), rightSymbol.getChild(0).getText())){
                 System.out.println("不要将不同数据类型字段进行join");
             }
 
@@ -465,8 +532,25 @@ public class TestFixListener extends HplsqlBaseListener {
     private String tableName;
     @Override
     public void exitSubselect_stmt(HplsqlParser.Subselect_stmtContext ctx){
-        if(!MysqlUtil.usePartitionCorrect(tableName, whereItemList)){
-            System.out.println("Be careful! 在有分区的表上没有使用分区查询!");
+        HashSet<String> partCol = MysqlUtil.partitionCheck(tableName, whereItemList);
+        if(partCol != null){
+            System.out.print("Warning! Please utilize partition in the query. Partition: ");
+            String whereCd = selectStmt.getWhereCondition();
+            StringBuilder whereCondition = new StringBuilder(whereCd==null ? "" : whereCd);
+            boolean isFirst = true;
+            for(String part : partCol){
+                if(isFirst){
+                    System.out.print(part);
+                    isFirst = false;
+                }else{
+                    System.out.print(", "+part);
+                }
+                if(whereCondition.length() != 0){
+                    whereCondition.append(" and ");
+                }
+                whereCondition.append(part).append("?");
+            }
+            selectStmt.setWhereCondition(whereCondition.toString());
         }
     }
 
@@ -477,4 +561,15 @@ public class TestFixListener extends HplsqlBaseListener {
         }
     }
 
+    @Override
+    public void enterFrom_subselect_clause(HplsqlParser.From_subselect_clauseContext ctx){
+    }
+
+    @Override
+    public void exitFrom_subselect_clause(HplsqlParser.From_subselect_clauseContext ctx){
+        selectStmtList.remove(selectStmtList.size()-1);
+        if(selectStmtList.size()>0){
+            selectStmt = selectStmtList.get(selectStmtList.size()-1);
+        }
+    }
 }

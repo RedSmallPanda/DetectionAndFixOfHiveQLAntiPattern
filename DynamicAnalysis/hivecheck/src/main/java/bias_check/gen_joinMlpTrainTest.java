@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class gen_joinMlpTrainTest {
-    public static void main(String args[]){
-        String filename="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainData.txt";
-        String output="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainTest.txt";
+    public static void main(String[] args){
+        String filename="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainData_L.txt";
+        String output="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainTest_L.txt";
         ArrayList<String> arrayList = new ArrayList<>();
         try {
             File file = new File(filename);

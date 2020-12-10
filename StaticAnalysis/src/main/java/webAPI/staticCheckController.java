@@ -12,6 +12,12 @@ public class staticCheckController {
     public String astCheck(@RequestParam(name="hiveql")String hiveql){
         System.out.println(hiveql);
         MergedTest.astCheck(hiveql);
-        return "123";
+        return "ast_check";
+    }
+    @RequestMapping(value="/configCheck",method = RequestMethod.GET)
+    public String configCheck(){
+
+        MergedTest.configCheck();
+        return "config_check";
     }
 }

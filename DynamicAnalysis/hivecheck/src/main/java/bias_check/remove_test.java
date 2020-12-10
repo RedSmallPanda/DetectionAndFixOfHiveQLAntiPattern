@@ -6,10 +6,10 @@ import java.util.Random;
 
 public class remove_test {
     public static void main(String [] args){
-        String filename="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainData.txt";
+        String filename="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainData_L.txt";
 
-        String test="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainTest.txt";
-        String output="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainTrainData_notest.txt";
+        String test="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainTest_L.txt";
+        String output="E:\\Hive_antipattern\\DynamicAnalysis\\hivecheck\\src\\main\\java\\bias_check\\joinMlpTrainTrainData_L_notest.txt";
         ArrayList<String> arrayList = new ArrayList<>();
         ArrayList<String> testarr=new ArrayList<>();
         try {

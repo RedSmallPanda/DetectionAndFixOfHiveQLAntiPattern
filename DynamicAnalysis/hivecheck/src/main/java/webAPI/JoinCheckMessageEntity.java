@@ -9,30 +9,13 @@ public class JoinCheckMessageEntity {
     @JSONField(name="dataImbalancedSuggest")
     public String dataImbalancedSuggest;
 
-    public Map<String,Long> keyMap1;
-    public Map<String,Long> keyMap2;
-
     public JoinCheckMessageEntity(String recommendReduceNum,String dataImbalaced) {
         super();
         this.recommendReduceNum = recommendReduceNum;
         this.dataImbalancedSuggest = dataImbalaced;
     }
 
-    public Map<String, Long> getKeyMap1() {
-        return keyMap1;
-    }
-
-    public void setKeyMap1(Map<String, Long> keyMap1) {
-        this.keyMap1 = keyMap1;
-    }
-
-    public Map<String, Long> getKeyMap2() {
-        return keyMap2;
-    }
-
-    public void setKeyMap2(Map<String, Long> keyMap2) {
-    }
-    public JoinCheckMessageEntity(int reduceNum, String asd){
+    public JoinCheckMessageEntity(){
         super();
         this.recommendReduceNum="-1";
         this.dataImbalancedSuggest ="";

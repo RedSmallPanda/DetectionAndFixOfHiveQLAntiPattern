@@ -5,6 +5,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 public class JoinCheckImp {
@@ -26,7 +27,9 @@ public class JoinCheckImp {
         if (DataImbalanceCheck.isDataImbalanced(t1_name, t1_key, t2_name, t2_key, result)) {
             result.setDataImbalancedSuggest("Data may be imbalanced!");
         }
+
         int mlpRn=Integer.parseInt(mlpReduceNum(20000,5,2000,5));
+
         System.out.println("MLPReduce Num: "+mlpRn);
         return result;
     }

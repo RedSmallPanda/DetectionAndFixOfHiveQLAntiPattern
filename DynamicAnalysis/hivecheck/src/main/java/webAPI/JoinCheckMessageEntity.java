@@ -12,6 +12,11 @@ public class JoinCheckMessageEntity {
         this.recommendReduceNum=recommendReduceNum;
         this.dataImbalancedSuggest =dataImbalaced;
     }
+    public JoinCheckMessageEntity(int reduceNum, String asd){
+        super();
+        this.recommendReduceNum="-1";
+        this.dataImbalancedSuggest ="";
+    }
 
     public String getRecommendReduceNum() {
         return recommendReduceNum;

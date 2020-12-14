@@ -1,6 +1,7 @@
 package bias_check;
 
 import webAPI.JoinCheckMessageEntity;
+import webAPI.JoinInfoEntity;
 
 import java.io.FileInputStream;
 import java.sql.Connection;
@@ -13,11 +14,11 @@ import java.util.Properties;
 
 
 public class DataImbalanceCheck {
-    public static boolean isDataImbalanced(String table1, String col1, String table2, String col2, JoinCheckMessageEntity jcme){
+    public static boolean isDataImbalanced(String table1, String col1, String table2, String col2, JoinInfoEntity jie){
         System.out.println("Checking data imbalance, please wait...");
-        Map<String,Long> keyNum1 = new HashMap<>();
-        Map<String,Long> keyNum2 = new HashMap<>();
-        Map<String,Long> joinedMap = new HashMap<>();
+        Map<String,Integer> keyNum1 = new HashMap<>();
+        Map<String,Integer> keyNum2 = new HashMap<>();
+        Map<String,Integer> joinedMap = new HashMap<>();
         long sum = 0;
         long keyNum = 0;
         long maxNum = 0;
@@ -33,22 +34,22 @@ public class DataImbalanceCheck {
             PreparedStatement ps=connection.prepareStatement("select "+ col1 + ",count(*) from "+table1+" group by "+col1);
             ResultSet rs=ps.executeQuery();
             while(rs.next()){
-                keyNum1.put(rs.getString(1),Long.valueOf(rs.getString(2)));
+                keyNum1.put(rs.getString(1),Integer.valueOf(rs.getString(2)));
             }
-            jcme.setKeyMap1(keyNum1);
+            jie.setKeyMap1(keyNum1);
             ps = connection.prepareStatement("select "+ col2 + ",count(*) from "+table2+" group by "+col2);
             rs = ps.executeQuery();
             while(rs.next()){
-                keyNum2.put(rs.getString(1),Long.valueOf(rs.getString(2)));
+                keyNum2.put(rs.getString(1),Integer.valueOf(rs.getString(2)));
             }
-            jcme.setKeyMap2(keyNum2);
-            for(Map.Entry<String,Long> iter:keyNum1.entrySet()){
+            jie.setKeyMap2(keyNum2);
+            for(Map.Entry<String,Integer> iter:keyNum1.entrySet()){
                 if(keyNum2.get(iter.getKey()) != null) {
                     joinedMap.put(iter.getKey(), iter.getValue() * keyNum2.get(iter.getKey()));
                 }
             }
 
-            for(Map.Entry<String,Long> iter:joinedMap.entrySet()){
+            for(Map.Entry<String,Integer> iter:joinedMap.entrySet()){
                 if(iter.getValue() > maxNum){
                     maxNum = iter.getValue();
                 }

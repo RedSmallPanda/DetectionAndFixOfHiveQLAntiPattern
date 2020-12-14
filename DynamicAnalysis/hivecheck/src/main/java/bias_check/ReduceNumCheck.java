@@ -116,9 +116,8 @@ public class ReduceNumCheck {
         reduceNumCheck("mrtest_100c", "city", "mrtest_100c", "city");
     }
 
-    public static int reduceNumCheckForAPI(JoinCheckMessageEntity jcme, int threshold){
-        Map<String,Long> keyMap1 = jcme.getKeyMap1();
-        Map<String,Long> keyMap2 = jcme.getKeyMap2();
+    public static int reduceNumCheckForAPI(int keyNum1, int keyNum2, long recordNum1, long recordNum2, int threshold){
+        System.out.println("ReduceNumCheck.reduceNumCheckForAPI");
         int cpuNum;
         try {
             Class.forName("org.apache.hive.jdbc.HiveDriver");
@@ -136,25 +135,7 @@ public class ReduceNumCheck {
             System.out.println("Lack of info about related tables, cannot check reduce num.");
             return -1;
         }
-        int keyNum1 = keyMap1.size();
-        int keyNum2 = keyMap2.size();
-        if(keyNum1==0){
-            System.out.println("Table1 is empty, cannot check reduce num.");
-            return -1;
-        }
-        if(keyNum2==0){
-            System.out.println("Table2 is empty, cannot check reduce num.");
-            return -1;
-        }
         int keyNum = Math.min(keyNum1, keyNum2);
-        Long recordNum1 = 0L;
-        for(Long keyRecord : keyMap1.values()){
-            recordNum1 += keyRecord;
-        }
-        Long recordNum2 = 0L;
-        for(Long keyRecord : keyMap2.values()){
-            recordNum2 += keyRecord;
-        }
         Long calculationScalePerKey = recordNum1/keyNum1 * recordNum2/keyNum2;
         int reduceNum;
         // 若单key数据计算量超过阈值，则1key1reduce

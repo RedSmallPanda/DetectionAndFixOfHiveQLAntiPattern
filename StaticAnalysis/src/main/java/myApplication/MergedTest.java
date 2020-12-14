@@ -8,9 +8,11 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 import otherUtils.stringUtil;
+import webAPI.ReturnMessageEntity;
+import webAPI.StaticCheckImp;
 
 public class MergedTest {
-    public static void astCheck(String s){
+    public static ReturnMessageEntity astCheck(String s){
         //创建输入字节流
         ANTLRInputStream input = new ANTLRInputStream(s);
         //构建词法分析器
@@ -26,7 +28,10 @@ public class MergedTest {
         ParseTreeWalker walker = new ParseTreeWalker();
         //第一个参数是自己写的解析器
 //        walker.walk(new MergedListener(),tree);
-        walker.walk(new TestFixListener(),tree);
+        TestFixListener testFixListener = new TestFixListener();
+        walker.walk(testFixListener,tree);
+        ReturnMessageEntity returnMessageEntity = testFixListener.returnMessageEntity;
+        return returnMessageEntity;
     }
 
     public static void configCheck(){

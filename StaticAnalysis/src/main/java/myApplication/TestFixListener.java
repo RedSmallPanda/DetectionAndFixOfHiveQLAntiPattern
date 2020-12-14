@@ -13,6 +13,7 @@ import org.stringtemplate.v4.STGroupFile;
 import otherUtils.FromJoinTable;
 import otherUtils.OrderByCondition;
 import otherUtils.SelectStmt;
+import webAPI.ReturnMessageEntity;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -29,6 +30,7 @@ public class TestFixListener extends HplsqlBaseListener {
     private ST testST = group.getInstanceOf("select_stmt");
     private List<SelectStmt> selectStmtList = new ArrayList<>(); //考虑到可能存在subselect语句，因此用列表存储所有出现的select_stmt
     private SelectStmt selectStmt = new SelectStmt();  //HQL修复，重新生成Select语句
+    public ReturnMessageEntity returnMessageEntity = new ReturnMessageEntity();
 
     @Override
     public void enterProgram(HplsqlParser.ProgramContext ctx){
@@ -43,6 +45,7 @@ public class TestFixListener extends HplsqlBaseListener {
 //        System.out.println("There is "+joinNum+" join");
         if(joinNum > 1){
             System.out.println("不要过多使用join");
+            returnMessageEntity.addSuggestion("不要过多使用join");
         }
         joinNum = 0;
 
@@ -51,6 +54,7 @@ public class TestFixListener extends HplsqlBaseListener {
         testST.add("stmt",selectStmt);
         String res = regexCheck(testST.render());
         System.out.println("\nFixed HiveQL:\n"+res);
+        returnMessageEntity.setFixedHiveql(res);
     }
 
     public String regexCheck(String s){
@@ -68,6 +72,7 @@ public class TestFixListener extends HplsqlBaseListener {
         while(m.find( )) {
             if(!printFlag){
                 System.out.println("Be careful! Using \"interval\" in \"date_sub()\" will cause error!");
+                returnMessageEntity.addSuggestion("Be careful! Using \"interval\" in \"date_sub()\" will cause error!");
                 printFlag = true;
             }
             s = s.replaceFirst(m.group(2), m.group(3));
@@ -89,6 +94,7 @@ public class TestFixListener extends HplsqlBaseListener {
             //if(selectItemList.size() != 0){
             if(currentSelectListNum.get(currentSelectListNum.size()-1) != 0){
                 System.out.println("Warning! Column selected should be concluded in group by");
+                returnMessageEntity.addSuggestion("Warning! Column selected should be concluded in group by");
             }
             //TODO:修复语句添加group by 条件
             for(String s:selectItemList){
@@ -170,6 +176,8 @@ public class TestFixListener extends HplsqlBaseListener {
                     //System.out.println(tableName1 + " " + tableName2);
                     //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
                     System.out.println("Please put the table containing less records on the left side of join. " +
+                            "Or check if the metaData of related tables is correct.");
+                    returnMessageEntity.addSuggestion("Please put the table containing less records on the left side of join. " +
                             "Or check if the metaData of related tables is correct.");
                     selectStmt.setDataImbalanced(true);
                 };
@@ -298,6 +306,7 @@ public class TestFixListener extends HplsqlBaseListener {
             }
             else{
                 System.out.println("不要在谓词中使用函数");
+                returnMessageEntity.addSuggestion("不要在谓词中使用函数");
             }
 
             //判断是否在on后的布尔表达式中进行了四则运算
@@ -306,12 +315,14 @@ public class TestFixListener extends HplsqlBaseListener {
                 //什么都不干
             } else {
                 System.out.println("不要在join子句中进行运算");
+                returnMessageEntity.addSuggestion("不要在join子句中进行运算");
             }
 
             //TODO:处理别名的情况
             //判断是否将不同数据类型字段进行join
             if(!MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(), rightSymbol.getChild(0).getText())){
                 System.out.println("不要将不同数据类型字段进行join");
+                returnMessageEntity.addSuggestion("不要将不同数据类型字段进行join");
             }
 
             //判断是否存在数据倾斜
@@ -324,8 +335,15 @@ public class TestFixListener extends HplsqlBaseListener {
                 String column2 = table2[1];
                 tableName1 = aliasTableName.get(tableName1) == null?tableName1:aliasTableName.get(tableName1);
                 tableName2 = aliasTableName.get(tableName2) == null?tableName2:aliasTableName.get(tableName2);
+                List<String> joinParams = new ArrayList<>();
+                joinParams.add(tableName1);
+                joinParams.add(column1);
+                joinParams.add(tableName2);
+                joinParams.add(column2);
+                returnMessageEntity.setJoinParams(joinParams);
                 if(HiveUtil.isDataImbalanced(tableName1, column1, tableName2, column2)){
                     System.out.println("可能存在数据倾斜！");
+                    returnMessageEntity.addSuggestion("可能存在数据倾斜！");
                 }
             }
 
@@ -361,6 +379,7 @@ public class TestFixListener extends HplsqlBaseListener {
         }
         else{
             System.out.println("不要在谓词中使用函数");
+            returnMessageEntity.addSuggestion("不要在谓词中使用函数");
         }
 
         //判断是否在where后的布尔表达式中进行了四则运算
@@ -370,12 +389,15 @@ public class TestFixListener extends HplsqlBaseListener {
         }
         else{
             System.out.println("不要在where子句中进行运算");
+            returnMessageEntity.addSuggestion("不要在where子句中进行运算");
         }
     }
     // 使用select *
     @Override
     public void enterSelect_list_asterisk(HplsqlParser.Select_list_asteriskContext ctx){
         System.out.println("Be careful! Using \"select *\" will cause poor performance! Please select " +
+                "specific column.");
+        returnMessageEntity.addSuggestion("Be careful! Using \"select *\" will cause poor performance! Please select " +
                 "specific column.");
     }
 
@@ -384,6 +406,7 @@ public class TestFixListener extends HplsqlBaseListener {
     public void enterNon_reserved_words(HplsqlParser.Non_reserved_wordsContext ctx){
         if(ctx.getText().equalsIgnoreCase("having")){
             System.out.println("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
+            returnMessageEntity.addSuggestion("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
         }
     }
 
@@ -407,6 +430,7 @@ public class TestFixListener extends HplsqlBaseListener {
         if(groupByFlag.size() == 0){
             selectStmt.setWhereCondition(ctx.bool_expr().getText());
             System.out.println("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
+            returnMessageEntity.addSuggestion("Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
         }else{
             selectStmt.setHavingCondition(getChildString(ctx.bool_expr().getChild(0).getChild(0)));
         }
@@ -416,6 +440,7 @@ public class TestFixListener extends HplsqlBaseListener {
     @Override
     public void enterOrder_by_clause(HplsqlParser.Order_by_clauseContext ctx){
         System.out.println("Be careful! Using \"order by\" will cause poor performance! Please use \"sort by\".");
+        returnMessageEntity.addSuggestion("Be careful! Using \"order by\" will cause poor performance! Please use \"sort by\".");
 
         //TODO:修复过程构造Order by
         List<ParseTree> exprContext = ctx.children;
@@ -459,6 +484,7 @@ public class TestFixListener extends HplsqlBaseListener {
     public void enterGroup_by_clause(HplsqlParser.Group_by_clauseContext ctx){
         if(!isGather){
             System.out.println("Be careful! \"group by\" should be used with aggregate function!");
+            returnMessageEntity.addSuggestion("Be careful! \"group by\" should be used with aggregate function!");
         }
         groupByFlag.add(1);
         List<HplsqlParser.ExprContext> exprContext = ctx.expr();
@@ -481,6 +507,8 @@ public class TestFixListener extends HplsqlBaseListener {
     public void enterExpr_agg_window_func(HplsqlParser.Expr_agg_window_funcContext ctx){
         if(ctx.getText().toLowerCase().contains("count(distinct")){
             System.out.println("Be careful! Using \"count(distinct ...)\" may cause poor performance! " +
+                    "Please use \"sum...group by\"");
+            returnMessageEntity.addSuggestion("Be careful! Using \"count(distinct ...)\" may cause poor performance! " +
                     "Please use \"sum...group by\"");
         }
         isGather = true;
@@ -506,6 +534,7 @@ public class TestFixListener extends HplsqlBaseListener {
             boolean isDouble2 = !isInteger(s2) || s2.contains("/");
             if(isDouble1 != isDouble2){
                 System.out.println("Be careful! Data type after \"then\" and \"else\" is different!");
+                returnMessageEntity.addSuggestion("Be careful! Data type after \"then\" and \"else\" is different!");
             }
         }
     }
@@ -522,6 +551,7 @@ public class TestFixListener extends HplsqlBaseListener {
     public void exitCreate_table_stmt(HplsqlParser.Create_table_stmtContext ctx){
         if(MysqlUtil.hasSameTable(colName)){
             System.out.println("重复建表！");
+            returnMessageEntity.addSuggestion("重复建表！");
         }
     }
 
@@ -535,6 +565,7 @@ public class TestFixListener extends HplsqlBaseListener {
         HashSet<String> partCol = MysqlUtil.partitionCheck(tableName, whereItemList);
         if(partCol != null){
             System.out.print("Warning! Please utilize partition in the query. Partition: ");
+            returnMessageEntity.addSuggestion("Warning! Please utilize partition in the query.");
             String whereCd = selectStmt.getWhereCondition();
             StringBuilder whereCondition = new StringBuilder(whereCd==null ? "" : whereCd);
             boolean isFirst = true;

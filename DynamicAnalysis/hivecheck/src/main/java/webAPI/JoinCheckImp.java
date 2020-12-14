@@ -5,6 +5,6 @@ public class JoinCheckImp {
         return "";
     }
     public static JoinCheckMessageEntity joinCheckRun(String t1_name,String t1_key,String t2_name,String t2_key){
-        return new JoinCheckMessageEntity();
+        return new JoinCheckMessageEntity("","");
     }
 }

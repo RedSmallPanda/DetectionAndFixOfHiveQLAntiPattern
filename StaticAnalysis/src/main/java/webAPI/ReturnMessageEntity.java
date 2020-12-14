@@ -1,13 +1,24 @@
 package webAPI;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.util.List;
 
 public class ReturnMessageEntity {
+    @JSONField(name="fixedHiveql")
     public String fixedHiveql;
+    @JSONField(name="fixedSuggestions")
     public List<String>fixedSuggestions;
+    @JSONField(name="joinParams")
     //参数顺序：t1_name,t1_joinkey,t2_name,t2_joinkey
-    public List<String>joinPrams;
+    public List<String>joinParams;
 
+    public ReturnMessageEntity(String fixedHiveql,List<String>fixedSuggestions,List<String>joinParams){
+        super();
+        this.fixedHiveql=fixedHiveql;
+        this.fixedSuggestions=fixedSuggestions;
+        this.joinParams=joinParams;
+    }
     public String getFixedHiveql() {
         return fixedHiveql;
     }
@@ -24,11 +35,11 @@ public class ReturnMessageEntity {
         this.fixedSuggestions = fixedSuggestions;
     }
 
-    public List<String> getJoinPrams() {
-        return joinPrams;
+    public List<String> getJoinParams() {
+        return joinParams;
     }
 
-    public void setJoinPrams(List<String> joinPrams) {
-        this.joinPrams = joinPrams;
+    public void setJoinParams(List<String> joinPrams) {
+        this.joinParams = joinPrams;
     }
 }

@@ -5,6 +5,7 @@ public class JoinCheckImp {
         return "";
     }
     public static JoinCheckMessageEntity joinCheckRun(String t1_name,String t1_key,String t2_name,String t2_key){
+        int reduceNum=Integer.parseInt(mlpReduceNum(20000,5,2000,5));
         return new JoinCheckMessageEntity("","");
     }
 }

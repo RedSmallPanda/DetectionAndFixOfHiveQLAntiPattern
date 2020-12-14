@@ -1,7 +1,11 @@
 package webAPI;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 public class JoinCheckMessageEntity {
+    @JSONField(name="recommendReduceNum")
     public String recommendReduceNum;
+    @JSONField(name="dataImbalancedSuggest")
     public String dataImbalancedSuggest;
     public JoinCheckMessageEntity(String recommendReduceNum,String dataImbalaced){
         super();

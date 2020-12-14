@@ -2,6 +2,7 @@ package webAPI;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReturnMessageEntity {
@@ -18,6 +19,15 @@ public class ReturnMessageEntity {
         this.fixedHiveql=fixedHiveql;
         this.fixedSuggestions=fixedSuggestions;
         this.joinParams=joinParams;
+    }
+    public ReturnMessageEntity(){
+        super();
+        this.fixedHiveql="";
+        this.fixedSuggestions=new ArrayList<>();
+        this.joinParams=null;
+    }
+    public void addSuggestion(String suggestion){
+        this.fixedSuggestions.add(suggestion);
     }
     public String getFixedHiveql() {
         return fixedHiveql;

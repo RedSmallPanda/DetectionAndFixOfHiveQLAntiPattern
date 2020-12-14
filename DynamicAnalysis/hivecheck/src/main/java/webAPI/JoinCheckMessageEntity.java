@@ -32,6 +32,11 @@ public class JoinCheckMessageEntity {
 
     public void setKeyMap2(Map<String, Long> keyMap2) {
     }
+    public JoinCheckMessageEntity(int reduceNum, String asd){
+        super();
+        this.recommendReduceNum="-1";
+        this.dataImbalancedSuggest ="";
+    }
 
     public String getRecommendReduceNum(){
         return recommendReduceNum;

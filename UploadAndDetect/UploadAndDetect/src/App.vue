@@ -44,12 +44,6 @@ created() {
     //页面创建时执行一次getHeight进行赋值，顺道绑定resize事件
     window.addEventListener("resize", this.getHeight);
     this.getHeight();
-    api.getUsers().then(response => {
-      console.log("Response: " + response.data)
-    }).catch(error => {
-      console.log("Error: " + error);
-      this.errors = error;
-    })
 }
 
 }

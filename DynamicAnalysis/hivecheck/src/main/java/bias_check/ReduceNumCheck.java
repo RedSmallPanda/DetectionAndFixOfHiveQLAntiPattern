@@ -1,7 +1,10 @@
 package bias_check;
 
+import webAPI.JoinCheckMessageEntity;
+
 import java.io.FileInputStream;
 import java.sql.*;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -17,7 +20,7 @@ public class ReduceNumCheck {
     }
 
     /*从集群获取逻辑CPU数*/
-    private int getCpuNum(Statement ps){
+    private static int getCpuNum(Statement ps){
         int cpuNum=-1;
         try{
             ResultSet r = ps.executeQuery("set yarn.nodemanager.resource.cpu-vcores");
@@ -111,6 +114,58 @@ public class ReduceNumCheck {
         reduceNumCheck("mrtest_5c", "city", "mrtest_5c", "city");
         reduceNumCheck("mrtest_3c", "city", "mrtest_3c", "city");
         reduceNumCheck("mrtest_100c", "city", "mrtest_100c", "city");
+    }
+
+    public static int reduceNumCheckForAPI(JoinCheckMessageEntity jcme, int threshold){
+        Map<String,Long> keyMap1 = jcme.getKeyMap1();
+        Map<String,Long> keyMap2 = jcme.getKeyMap2();
+        int cpuNum;
+        try {
+            Class.forName("org.apache.hive.jdbc.HiveDriver");
+            FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
+            Properties props = new Properties();
+            props.load(in);
+            String url = props.getProperty("url");
+            Connection connection = DriverManager.getConnection(url,props.getProperty("username"),props.getProperty("password"));
+            Statement ps=connection.createStatement();
+            cpuNum = getCpuNum(ps);
+            ps.close();
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Lack of info about related tables, cannot check reduce num.");
+            return -1;
+        }
+        int keyNum1 = keyMap1.size();
+        int keyNum2 = keyMap2.size();
+        if(keyNum1==0){
+            System.out.println("Table1 is empty, cannot check reduce num.");
+            return -1;
+        }
+        if(keyNum2==0){
+            System.out.println("Table2 is empty, cannot check reduce num.");
+            return -1;
+        }
+        int keyNum = Math.min(keyNum1, keyNum2);
+        Long recordNum1 = 0L;
+        for(Long keyRecord : keyMap1.values()){
+            recordNum1 += keyRecord;
+        }
+        Long recordNum2 = 0L;
+        for(Long keyRecord : keyMap2.values()){
+            recordNum2 += keyRecord;
+        }
+        Long calculationScalePerKey = recordNum1/keyNum1 * recordNum2/keyNum2;
+        int reduceNum;
+        // 若单key数据计算量超过阈值，则1key1reduce
+        if(calculationScalePerKey > threshold){
+            reduceNum = Math.min(keyNum, cpuNum);
+        }else{
+            // 若未超过，则总共1reduce
+            reduceNum = 1;
+        }
+        System.out.println("Suggest set "+reduceNum+" reduce task(s).");
+        return reduceNum;
     }
 
 }

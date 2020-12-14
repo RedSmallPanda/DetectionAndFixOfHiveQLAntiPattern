@@ -11,7 +11,8 @@ public class staticCheckController {
     @RequestMapping(value="/astCheck",method = RequestMethod.GET)
     public String astCheck(@RequestParam(name="hiveql")String hiveql){
         System.out.println(hiveql);
-        MergedTest.astCheck(hiveql);
+        StaticCheckImp.staticCheckRun(hiveql);
+//        MergedTest.astCheck(hiveql);
         return "ast_check";
     }
     @RequestMapping(value="/configCheck",method = RequestMethod.GET)

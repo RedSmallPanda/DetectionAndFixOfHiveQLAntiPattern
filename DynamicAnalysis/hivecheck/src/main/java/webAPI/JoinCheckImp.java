@@ -14,10 +14,10 @@ public class JoinCheckImp {
         return "-1";
     }
 
-    public static String mlpReduceNum(int t1_size,int key1_size,int t2_size,int key2_size ) throws IOException {
+    public static String mlpReduceNum(int t1_size,int key1_size,int t2_size,int key2_size) throws IOException {
         System.out.println("JoinCheckImp.mlpReduceNum");
         RestTemplate restTemplate=new RestTemplate();
-//        /predict_reduce/<int:t1>/<int:key1>/<int:t2>/<int:key2>
+        // /predict_reduce/<int:t1>/<int:key1>/<int:t2>/<int:key2>
         FileInputStream in = new FileInputStream("src/main/resources/application.properties");
         Properties props = new Properties();
         props.load(in);

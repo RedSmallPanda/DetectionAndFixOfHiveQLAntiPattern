@@ -26,7 +26,7 @@ public class DataImbalanceCheck {
         try {
             Class.forName("org.apache.hive.jdbc.HiveDriver");
             //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
-            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("url");
@@ -66,7 +66,7 @@ public class DataImbalanceCheck {
             connection.close();
         } catch (Exception e) {
             System.out.println("May not find the table.");
-//            e.printStackTrace();
+            e.printStackTrace();
         }
         return(maxNum > 5*average);
     }

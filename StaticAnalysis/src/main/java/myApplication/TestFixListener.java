@@ -252,7 +252,7 @@ public class TestFixListener extends HplsqlBaseListener {
             selectStmt.addTable(tempTable);
 
             //TODO:修复两表顺序
-            if(selectStmt.getDataImbalanced() == true) {
+            if(selectStmt.getDataImbalanced() != null) {
                 selectStmt.switchJoinTables();
             }
         }

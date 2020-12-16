@@ -28,10 +28,16 @@ public class MergedTest {
         ParseTreeWalker walker = new ParseTreeWalker();
         //第一个参数是自己写的解析器
 //        walker.walk(new MergedListener(),tree);
-        TestFixListener testFixListener = new TestFixListener();
-        walker.walk(testFixListener,tree);
-        ReturnMessageEntity returnMessageEntity = testFixListener.returnMessageEntity;
-        return returnMessageEntity;
+        try {
+            TestFixListener testFixListener = new TestFixListener();
+            walker.walk(testFixListener, tree);
+            ReturnMessageEntity returnMessageEntity = testFixListener.returnMessageEntity;
+            return returnMessageEntity;
+        }
+        catch(Exception e){
+            System.out.println("There is something wrong with the HQL");
+            return null;
+        }
     }
 
     public static void configCheck(){

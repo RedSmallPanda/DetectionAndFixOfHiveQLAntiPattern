@@ -341,10 +341,10 @@ public class TestFixListener extends HplsqlBaseListener {
                 joinParams.add(tableName2);
                 joinParams.add(column2);
                 returnMessageEntity.setJoinParams(joinParams);
-                if(HiveUtil.isDataImbalanced(tableName1, column1, tableName2, column2)){
-                    System.out.println("可能存在数据倾斜！");
-                    returnMessageEntity.addSuggestion("可能存在数据倾斜！");
-                }
+//                if(HiveUtil.isDataImbalanced(tableName1, column1, tableName2, column2)){
+//                    System.out.println("可能存在数据倾斜！");
+//                    returnMessageEntity.addSuggestion("可能存在数据倾斜！");
+//                }
             }
 
         }

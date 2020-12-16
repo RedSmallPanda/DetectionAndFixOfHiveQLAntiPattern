@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>hive-check</groupId>
-    <artifactId>hive-check</artifactId>
+    <artifactId>hive-join-check</artifactId>
     <version>1</version>
 
     <build>

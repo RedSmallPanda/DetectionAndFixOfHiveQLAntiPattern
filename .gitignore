@@ -22,3 +22,5 @@ data
 target
 application.properties
 StaticAnalysis/classes/artifacts/antlrtest_jar/antlrtest.jar
+DynamicAnalysis/hivecheck/hive-join-check-1.jar
+StaticAnalysis/hive-static-check-1.jar

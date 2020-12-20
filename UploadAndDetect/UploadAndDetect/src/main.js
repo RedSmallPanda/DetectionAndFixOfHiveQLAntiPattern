@@ -5,15 +5,16 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import App from './App'
 import router from './router'
+import common from './components/common'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
-
+Vue.prototype.common = common //挂载到Vue实例上
 
 // 引用axios 并设置基础URL
 var axios = require('axios')
-axios.default.baseURL = 'https://localhost:8088'
-// 将API方法绑定到全局
+// axios.default.baseURL = 'https://localhost:8088'
+// // 将API方法绑定到全局
 Vue.prototype.$axios = axios
 
 /* eslint-disable no-new */

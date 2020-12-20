@@ -11,11 +11,11 @@ Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.prototype.common = common //挂载到Vue实例上
 
-// 引用axios 并设置基础URL
-var axios = require('axios')
+// // 引用axios 并设置基础URL
+// var axios = require('axios')
 // axios.default.baseURL = 'https://localhost:8088'
 // // 将API方法绑定到全局
-Vue.prototype.$axios = axios
+// Vue.prototype.$axios = axios
 
 /* eslint-disable no-new */
 new Vue({
@@ -23,4 +23,4 @@ new Vue({
   router,
   components: { App },
   template: '<App/>'
-})
+});

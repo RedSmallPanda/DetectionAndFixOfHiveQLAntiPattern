@@ -13,7 +13,7 @@
     <div class="detect">
       <el-button type="primary" v-on:click="detect">Detect</el-button>
     </div>
-    <div style="clear: right" v-if="isGetResult">
+    <div style="clear: right" v-if="isGetFixResult">
       <el-row style="flex-direction: row; clear: right">
         <el-col :span="24">
           <el-card class="box-card">
@@ -21,7 +21,7 @@
               <span>Detect Result</span>
             </div>
             <div
-              v-loading="loading"
+              v-loading="fixLoading"
               element-loading-text="正在进行检测"
               element-loading-spinner="el-icon-loading"
               element-loading-background="rgba(0, 0, 0, 0.8)"
@@ -36,7 +36,7 @@
               <span>Fix Suggestions</span>
             </div>
             <el-table
-              v-loading="loading"
+              v-loading="fixLoading"
               element-loading-text="正在进行修复"
               element-loading-spinner="el-icon-loading"
               element-loading-background="rgba(0, 0, 0, 0.8)"
@@ -71,29 +71,20 @@ export default {
         //   suggestion: "test",
         // }
        ],
-      isGetResult: false,
+      isGetFixResult: false,
       disableHiveQL: false,
       api1url: this.common.api1url,
-      fixData: [
-        {
-          type: "test1",
-          description: "description",
-        },
-        {
-          type: "test2",
-          description: "description",
-        },
-      ],
-      loading: true,
+      api2url: this.common.api2url,
+      t1_name: " ",
+      t1_key: " ",
+      t2_name: " ",
+      t2_key: " ",
+      fixLoading: true,
     };
   },
   methods: {
     detect() {
       var _this = this; //指定this
-      // _this.disableHiveQL = true;
-      //  _this.$router.push({
-      //     path: `/result`,
-      //   });
       _this
         .$axios({
           //创建接口
@@ -105,18 +96,41 @@ export default {
         })
         .then(function (response) {
           //请求成功返回
-          _this.focus = response.data.focus; //数据打包，打包在data中创建的数组 我这里是focus数组
-          _this.isGetResult = true ;
-          _this.loading = false ;
+          _this.isGetFixResult = true ;
+          _this.fixLoading = false ;
           console.log(response.data); //打印请求的数据
           _this.fixedHiveql = response.data.fixedHiveql;
           for(var i=0;i<response.data.fixedSuggestions.length;i++){
             console.log(response.data.fixedSuggestions[i]);
             _this.fixSuggestions.push({"id":i+1,"suggestion":response.data.fixedSuggestions[i]});
           }
-          console.log(response.data.fixedHiveql); 
+          console.log(response.data.fixedHiveql);
+          if (response.data.joinParams){
+            _this.t1_name = response.data.joinParams[0];
+            _this.t1_key = response.data.joinParams[1];
+            _this.t2_name = response.data.joinParams[2];
+            _this.t2_key = response.data.joinParams[3];
+            _this.join_detect();
+          }
         });
     },
+    join_detect(){
+      var _this = this;
+      _this
+      .$axios({
+        // create api
+        methods: "get",
+        url: _this.api2url+'/join_check',
+        params:{
+          t1_name:_this.t1_name,
+          t1_key:_this.t1_key,
+          t2_name:_this.t2_name,
+          t2_key:_this.t2_key
+        }
+      }).then(function(response){
+        console.log(response.data); //打印请求的数据
+      });
+    }
   },
 };
 </script>

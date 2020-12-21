@@ -15,7 +15,7 @@ public class GridSearch {
         } catch (ClassNotFoundException e){
             e.printStackTrace();
         }
-//        FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
+//        FileInputStream in = new FileInputStream("src/main/resources/application.properties");
 //        Properties props = new Properties();
 //        props.load(in);
 //        String url = props.getProperty("url");
@@ -111,7 +111,7 @@ public class GridSearch {
         int[] keyNum = new int[tableNameSuf.length];
         try{
             Class.forName("org.apache.hive.jdbc.HiveDriver");
-//            FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
+//            FileInputStream in = new FileInputStream("src/main/resources/application.properties");
 //            Properties props = new Properties();
 //            props.load(in);
 //            String url = props.getProperty("url");

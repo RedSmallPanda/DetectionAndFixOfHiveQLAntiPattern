@@ -24,8 +24,8 @@ public class HiveUtil {
         long average = 0;
         try {
             Class.forName("org.apache.hive.jdbc.HiveDriver");
-            //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/java/mysqlUtils/application.properties");
-            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/resources/application.properties");
+            FileInputStream in = new FileInputStream("src/main/resources/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("url");

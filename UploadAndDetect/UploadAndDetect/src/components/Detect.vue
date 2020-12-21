@@ -13,59 +13,45 @@
     <div class="detect">
       <el-button type="primary" v-on:click="detect">Detect</el-button>
     </div>
-    <div style="clear:right"> 
-    <el-row style="flex-direction: row; clear:right">
-      <el-col :span="24">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>Problem</span>
-            <!-- <el-button style="float: right; padding: 3px 0" type="text" >操作按钮</el-button> -->
-          </div>
-          <div v-for="o in 4" :key="o" class="text item" v-loading="loading">
-            {{ "列表内容 " + o }}
-          </div>
-          <el-table
-            v-loading="loading"
-            element-loading-text="正在进行检测"
-            element-loading-spinner="el-icon-loading"
-            element-loading-background="rgba(0, 0, 0, 0.8)"
-            :data="tableData"
-            style="width: 100%"
-          >
-            <el-table-column prop="date" label="日期" width="180">
-            </el-table-column>
-            <el-table-column prop="name" label="姓名" width="180">
-            </el-table-column>
-            <el-table-column prop="address" label="地址"> </el-table-column>
-          </el-table>
-        </el-card>
-      </el-col>
-      <el-col :span="24" style="margin-top: 10px">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>Fix Advice</span>
-            <!-- <el-button style="float: right; padding: 3px 0" type="text" >操作按钮</el-button> -->
-          </div>
-          <el-table
-            v-loading="loading"
-            element-loading-text="正在进行修复"
-            element-loading-spinner="el-icon-loading"
-            element-loading-background="rgba(0, 0, 0, 0.8)"
-            :data="fixData"
-            style="width: 100%"
-          >
-            <el-table-column prop="type" label="种类" width="180">
-            </el-table-column>
-            <el-table-column prop="description" label="描述" width="180">
-            </el-table-column>
-          </el-table>
-          <div v-for="o in 4" :key="o" class="text item">
-            {{ "列表内容 " + o }}
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-  </div>
+    <div style="clear: right" v-if="isGetResult">
+      <el-row style="flex-direction: row; clear: right">
+        <el-col :span="24">
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>Detect Result</span>
+            </div>
+            <div
+              v-loading="loading"
+              element-loading-text="正在进行检测"
+              element-loading-spinner="el-icon-loading"
+              element-loading-background="rgba(0, 0, 0, 0.8)"
+            >
+            {{ fixedHiveql }}
+            </div>
+          </el-card>
+        </el-col>
+        <el-col :span="24" style="margin-top: 10px">
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>Fix Suggestions</span>
+            </div>
+            <el-table
+              v-loading="loading"
+              element-loading-text="正在进行修复"
+              element-loading-spinner="el-icon-loading"
+              element-loading-background="rgba(0, 0, 0, 0.8)"
+              :data="fixSuggestions"
+              style="width: 100%"
+            >
+              <el-table-column prop="id" label="序号" width="80">
+              </el-table-column>
+              <el-table-column prop="suggestion" label="修复建议" width="720">
+              </el-table-column>
+            </el-table>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
   </div>
 </template>
 
@@ -78,42 +64,33 @@ export default {
   data() {
     return {
       hiveQL: "",
+      fixedHiveql: "",
+      fixSuggestions:[
+        // {
+        //   id: "-1",
+        //   suggestion: "test",
+        // }
+       ],
+      isGetResult: false,
       disableHiveQL: false,
       api1url: this.common.api1url,
       fixData: [
         {
           type: "test1",
-          description: "description"
+          description: "description",
         },
         {
           type: "test2",
-          description: "description"
-        }
-      ],
-      tableData: [
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-        },
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
+          description: "description",
         },
       ],
-      loading: false,
+      loading: true,
     };
   },
   methods: {
     detect() {
       var _this = this; //指定this
-      _this.disableHiveQL = true;
+      // _this.disableHiveQL = true;
       //  _this.$router.push({
       //     path: `/result`,
       //   });
@@ -129,10 +106,15 @@ export default {
         .then(function (response) {
           //请求成功返回
           _this.focus = response.data.focus; //数据打包，打包在data中创建的数组 我这里是focus数组
+          _this.isGetResult = true ;
+          _this.loading = false ;
           console.log(response.data); //打印请求的数据
-          this.$router.push({
-            path: `/result`,
-          });
+          _this.fixedHiveql = response.data.fixedHiveql;
+          for(var i=0;i<response.data.fixedSuggestions.length;i++){
+            console.log(response.data.fixedSuggestions[i]);
+            _this.fixSuggestions.push({"id":i+1,"suggestion":response.data.fixedSuggestions[i]});
+          }
+          console.log(response.data.fixedHiveql); 
         });
     },
   },
@@ -141,7 +123,7 @@ export default {
 
 <style scoped>
 .detect {
-  float:right;
+  float: right;
   margin-top: 10px;
   margin-bottom: 10px;
 }

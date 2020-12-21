@@ -19,7 +19,7 @@
 <script>
 import NavMenu from './components/NavMenu.vue'
 import Header from './components/Header'
-import api from './api/backend-api'
+
 
 export default {
   name: 'app',

@@ -35,7 +35,7 @@ public class ReduceTaskBaselineTest {
         int calculationScaleThreshold=12500*12500/25;
         try{
             Class.forName("org.apache.hive.jdbc.HiveDriver");
-            FileInputStream in = new FileInputStream("src/main/java/bias_check/application.properties");
+            FileInputStream in = new FileInputStream("src/main/resources/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("url");

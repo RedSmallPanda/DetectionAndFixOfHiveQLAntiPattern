@@ -6,7 +6,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
 
 @RestController
 public class Controller {
@@ -17,5 +21,28 @@ public class Controller {
 //        MergedTest.astCheck(hiveql);
         String messageJson= JSON.toJSONString(joinCheckMessageEntity);
         return messageJson;
+    }
+
+    @RequestMapping(value = "/configSet", method = RequestMethod.POST)
+    public String config(@RequestParam Map<String, String> params){
+        StringBuilder sb = new StringBuilder();
+        try{
+            FileInputStream in = new FileInputStream("src/main/resources/application.properties");
+            Properties props = new Properties();
+            props.load(in);
+            for(Map.Entry<String, String> entry : params.entrySet()){
+                if(props.containsKey(entry.getKey())){
+                    String old = (String) props.setProperty(entry.getKey(), entry.getValue());
+                    sb.append("Change ").append(old).append(" to ").append(entry.getValue()).append(". \n");
+                }
+            }
+            in.close();
+            FileOutputStream out = new FileOutputStream("src/main/resources/application.properties");
+            props.store(out, "");
+        } catch (Exception e){
+            e.printStackTrace();
+            sb.replace(0, sb.length(), "Error!");
+        }
+        return sb.toString();
     }
 }

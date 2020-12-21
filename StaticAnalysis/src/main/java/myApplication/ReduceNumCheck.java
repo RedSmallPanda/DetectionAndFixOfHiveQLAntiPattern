@@ -58,7 +58,7 @@ public class ReduceNumCheck {
         int cpuNum=0, keyNum1=0, keyNum2=0, recordNum1=0, recordNum2=0;
         try {
             Class.forName("org.apache.hive.jdbc.HiveDriver");
-            FileInputStream in = new FileInputStream("src/main/java/mysqlUtils/application.properties");
+            FileInputStream in = new FileInputStream("src/main/resources/application.properties");
             Properties props = new Properties();
             props.load(in);
             String url = props.getProperty("url");

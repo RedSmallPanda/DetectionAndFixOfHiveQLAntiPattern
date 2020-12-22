@@ -12,7 +12,14 @@ import webAPI.ReturnMessageEntity;
 import webAPI.StaticCheckImp;
 
 public class MergedTest {
-    public static ReturnMessageEntity astCheck(String s){
+    public static ReturnMessageEntity astCheck(String s) {
+        System.out.println("-HiveQL:"+s);
+        System.out.println("-Suggestion:");
+        try{
+            s = stringUtil.join2innerJoin(s);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         //创建输入字节流
         ANTLRInputStream input = new ANTLRInputStream(s);
         //构建词法分析器
@@ -81,7 +88,7 @@ public class MergedTest {
 
         // 在有分区的表上没有使用分区查询
 //        String s = "select name from partitiontable;";  // AP
-        String s = "select name from partitiontable where name='cn';";  // AP
+//        String s = "select name from partitiontable where name='cn';";  // AP
 //        String s = "select name from partitiontable where city='changzhou';";
 
         // select的列未在group by中
@@ -91,9 +98,10 @@ public class MergedTest {
         // subselect
 //        String s = "select p1.name from mrtest_500 p1 join (select city from mrtest_50) p2 on p1.city = p2.city where p1.city = 1;";
 
-        s = stringUtil.join2innerJoin(s);
-        astCheck(s);
+        // 不要过多使用join
+        String s = "select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id;";
 
+        astCheck(s);
 
         //System.out.println(tree.toStringTree(parser));
 

@@ -53,7 +53,7 @@ public class TestFixListener extends HplsqlBaseListener {
         //TODO:测试修复
         testST.add("stmt",selectStmt);
         String res = regexCheck(testST.render());
-        System.out.println("\nFixed HiveQL:\n"+res);
+        System.out.println("-Fixed HiveQL:\n"+res+"\n");
         returnMessageEntity.setFixedHiveql(res);
     }
 
@@ -65,7 +65,7 @@ public class TestFixListener extends HplsqlBaseListener {
     // 在date_sub()中使用interval
     public String dateSubIntervalCheck(String s){
         s = s.toLowerCase();
-        String pattern = "(date_\\S+?\\s*\\(.+?,\\s*)(interval\\s*'*(\\d*)'*\\s*day)\\)";
+        String pattern = "(date_\\S+?\\s*\\(.+?,\\s*)(interval\\s*'*(\\d*)'*\\s*day(s)?)\\)";
         Pattern r = Pattern.compile(pattern);
         Matcher m = r.matcher(s);
         boolean printFlag = false;

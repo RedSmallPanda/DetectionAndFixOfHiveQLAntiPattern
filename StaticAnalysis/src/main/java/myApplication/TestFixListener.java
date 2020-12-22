@@ -50,6 +50,11 @@ public class TestFixListener extends HplsqlBaseListener {
         joinNum = 0;
 
 
+        //完全正确的情况添加提醒
+        if(returnMessageEntity.getFixedSuggestions().size() == 0){
+            returnMessageEntity.addSuggestion("Totally Right HQL!");
+        }
+
         //TODO:测试修复
         testST.add("stmt",selectStmt);
         String res = regexCheck(testST.render());
@@ -399,6 +404,9 @@ public class TestFixListener extends HplsqlBaseListener {
                 "specific column.");
         returnMessageEntity.addSuggestion("Be careful! Using \"select *\" will cause poor performance! Please select " +
                 "specific column.");
+        selectStmt.addColumn("column1",null);
+        selectStmt.addColumn("...",null);
+        selectStmt.addColumn("columnN",null);
     }
 
     // 使用having进行过滤

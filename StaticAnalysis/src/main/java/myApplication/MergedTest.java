@@ -11,27 +11,61 @@ import otherUtils.stringUtil;
 import webAPI.ReturnMessageEntity;
 import webAPI.StaticCheckImp;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class MergedTest {
     public static ReturnMessageEntity astCheck(String s){
-        //创建输入字节流
-        ANTLRInputStream input = new ANTLRInputStream(s);
-        //构建词法分析器
-        HplsqlLexer lexer = new HplsqlLexer(input);
-        //将词存储在内存中
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        //构建语法分析器
-        HplsqlParser parser = new HplsqlParser(tokens);
-        //构建解析树
-        ParseTree tree = parser.program();
-
-        //构建树遍历器
-        ParseTreeWalker walker = new ParseTreeWalker();
-        //第一个参数是自己写的解析器
-//        walker.walk(new MergedListener(),tree);
         try {
+            //创建输入字节流
+            ANTLRInputStream input = new ANTLRInputStream(s);
+            //构建词法分析器
+            HplsqlLexer lexer = new HplsqlLexer(input);
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(HplsqlErrorListener.INSTANCE);
+            //将词存储在内存中
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            //构建语法分析器
+            HplsqlParser parser = new HplsqlParser(tokens);
+            parser.removeErrorListeners();
+            parser.addErrorListener(HplsqlErrorListener.INSTANCE);
+            //构建解析树
+            ParseTree tree = parser.program();
+
+            //构建树遍历器
+            ParseTreeWalker walker = new ParseTreeWalker();
+            //第一个参数是自己写的解析器
+//        walker.walk(new MergedListener(),tree);
+
+            //记录已做修复的AP，只有检测到这些警告，才会生成修复语句
+            String[] alreadyFixedPatternsAsList = {"Please put the table containing less records on the left side of join. Or check if the metaData of related tables is correct.",
+                    "Be careful! Using \"having\" will cause poor performance! Please use \"where\".",
+                    "Be careful! Using \"interval\" in \"date_sub()\" will cause error!",
+                    "Be careful! Using \"select *\" will cause poor performance! Please select specific column.",
+                    "Warning! Column selected should be concluded in group by",
+                    "Warning! Please utilize partition in the query."
+            };
+            List<String> alreadyFixedPatterns = Arrays.asList(alreadyFixedPatternsAsList);
+
             TestFixListener testFixListener = new TestFixListener();
             walker.walk(testFixListener, tree);
             ReturnMessageEntity returnMessageEntity = testFixListener.returnMessageEntity;
+            List<String> suggestionList = new ArrayList<>();
+            //判断是否检测到了已做修复的AP
+            int flag = 0;
+            //去重
+            for (int i = 0; i < returnMessageEntity.getFixedSuggestions().size(); i++) {
+                if (alreadyFixedPatterns.contains(returnMessageEntity.getFixedSuggestions().get(i))) {
+                    flag = 1;
+                }
+                if (!suggestionList.contains(returnMessageEntity.getFixedSuggestions().get(i))) {
+                    suggestionList.add(returnMessageEntity.getFixedSuggestions().get(i));
+                }
+            }
+            if (flag == 0) {
+                returnMessageEntity.setFixedHiveql(null);
+            }
             return returnMessageEntity;
         }
         catch(Exception e){

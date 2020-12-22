@@ -57,7 +57,7 @@ public class TestCase {
                 {{"select col1,col2 from t1 group by col1,col2;"}, {"10"}},
                 {{"select col1,col2 from t1 group by col1;"}, {"10","7"}},
                 {{"select col1,col2,sum(col3) from t1 group by col1,col2;"}, {}},
-                {{"select sum(col1), col2, distinct col3 from t1 group by col1, col2"}, {"7"}},
+                {{"select sum(col1), col2, distinct col3 from t1 group by col1, col2"}, {"13"}},
                 {{"select t1.col1, t1.col2, t2.col3 from t1 join t2 on t1.col1 = t2.col1 group by t2.col1, t1.col2, t2.col3"}, {"10","7"}},
                 {{"select col1,col2 from (select t1.col1,t2.col2 from t1 join t2 on t1.id = t2.id) as t3 group by col1;"}, {"10","7"}},
                 {{"select t3.col1,t3.col2,sum(t3.col1) from (select t1.col1,t2.col2 from t1 join t2 on t1.id = t2.id) as t3 group by t3.col1,t3.col2;"}, {}},
@@ -97,7 +97,7 @@ public class TestCase {
         apMap.put("9", "Be careful! Data type after \"then\" and \"else\" is different!");
         apMap.put("10", "Be careful! \"group by\" should be used with aggregate function!");
         apMap.put("11", "Be careful! Using \"count(distinct ...)\" may cause poor performance! Please use \"sum...group by\"");
-        apMap.put("13", "异常输入.");
+        apMap.put("13", "This HiveQL may be illegal, please check your input or the database connection.");
 
         int testCaseNum = testCases.length;
         int testWrongNum = 0;
@@ -109,7 +109,12 @@ public class TestCase {
             List<String> fixedSuggestions= StaticCheckImp.staticCheckRun(hiveql).fixedSuggestions;
             int fixedSuggestionsNum = fixedSuggestions.size();
             boolean isWrong = false;
-            if(fixedSuggestionsNum != fixedSuggestionsException.length){
+            if(fixedSuggestionsException.length == 0){
+                if(fixedSuggestionsNum != 1 && !fixedSuggestions.get(0).equals("Correct HQL.")){
+                    isWrong = true;
+                }
+            }
+            else if(fixedSuggestionsNum != fixedSuggestionsException.length){
                 isWrong = true;
             }else{
                 for(String sugNum : fixedSuggestionsException){

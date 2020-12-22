@@ -49,15 +49,13 @@ public class TestFixListener extends HplsqlBaseListener {
         }
         joinNum = 0;
 
-
-        //完全正确的情况添加提醒
-        if(returnMessageEntity.getFixedSuggestions().size() == 0){
-            returnMessageEntity.addSuggestion("Totally Right HQL!");
-        }
-
         //TODO:测试修复
         testST.add("stmt",selectStmt);
         String res = regexCheck(testST.render());
+        //完全正确的情况添加提醒
+        if(returnMessageEntity.getFixedSuggestions().size() == 0){
+            returnMessageEntity.addSuggestion("Correct HQL.");
+        }
         System.out.println("-Fixed HiveQL:\n"+res+"\n");
         returnMessageEntity.setFixedHiveql(res);
     }

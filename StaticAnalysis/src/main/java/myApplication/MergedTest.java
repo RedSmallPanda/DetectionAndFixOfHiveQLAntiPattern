@@ -7,6 +7,7 @@ import mysqlUtils.MysqlUtil;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
+import otherUtils.SqlParseCheck;
 import otherUtils.stringUtil;
 import webAPI.ReturnMessageEntity;
 import webAPI.StaticCheckImp;
@@ -20,6 +21,12 @@ public class MergedTest {
         try {
             System.out.println("-HiveQL:"+s);
             System.out.println("-Suggestion:");
+            s = s.replace(";", "");
+            if(!SqlParseCheck.sqlParseCheck(s)){
+                ReturnMessageEntity returnMessageEntity = new ReturnMessageEntity();
+                returnMessageEntity.addSuggestion("This HiveQL may be illegal, please check your input or the database connection.");
+                return returnMessageEntity;
+            }
             s = stringUtil.join2innerJoin(s);
             //创建输入字节流
             ANTLRInputStream input = new ANTLRInputStream(s);
@@ -129,7 +136,11 @@ public class MergedTest {
 //        String s = "select p1.name from mrtest_500 p1 join (select city from mrtest_50) p2 on p1.city = p2.city where p1.city = 1;";
 
         // 不要过多使用join
-        String s = "select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id;";
+//        String s = "select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id;";
+
+        // 错误的语句
+//        String s = "12345";
+        String s = "啊啦啦啦";
 
         astCheck(s);
 

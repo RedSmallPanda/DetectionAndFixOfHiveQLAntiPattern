@@ -38,11 +38,11 @@ export default {
   data() {
     return {
       formInline: {
-        mysqlUrl:"jdbc:mysql://202.120.40.28:50088/hive",
-        mysqlUsername: "hive",
-        mysqlPassword: "hive",
-        url:"jdbc:hive2://202.120.40.28:50089/default",
-        username: "root",
+        mysqlUrl:" ",
+        mysqlUsername: " ",
+        mysqlPassword: " ",
+        url:" ",
+        username: " ",
         password: "",
       }
     }

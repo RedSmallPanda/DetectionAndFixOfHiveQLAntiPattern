@@ -1,10 +1,7 @@
 package webAPI;
 
 import com.alibaba.fastjson.JSON;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -13,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 
 @RestController
+@CrossOrigin(value = "*")
 public class Controller {
     @RequestMapping(value = "/join_check", method = RequestMethod.GET)
     public String join_check(@RequestParam(name = "t1_name") String t1_name, @RequestParam(name = "t1_key") String t1_key, @RequestParam(name = "t2_name") String t2_name, @RequestParam(name = "t2_key") String t2_key) throws IOException {
@@ -39,6 +37,7 @@ public class Controller {
             in.close();
             FileOutputStream out = new FileOutputStream("src/main/resources/application.properties");
             props.store(out, "");
+            out.close();
         } catch (Exception e){
             e.printStackTrace();
             sb.replace(0, sb.length(), "Error!");

@@ -7,6 +7,7 @@ import mysqlUtils.MysqlUtil;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
+import otherUtils.SqlParseCheck;
 import otherUtils.stringUtil;
 import webAPI.ReturnMessageEntity;
 import webAPI.StaticCheckImp;
@@ -20,6 +21,12 @@ public class MergedTest {
         try {
             System.out.println("-HiveQL:"+s);
             System.out.println("-Suggestion:");
+            s = s.replace(";", "");
+            if(!SqlParseCheck.sqlParseCheck(s)){
+                ReturnMessageEntity returnMessageEntity = new ReturnMessageEntity();
+                returnMessageEntity.addSuggestion("This HiveQL may be illegal, please check your input or the database connection.");
+                return returnMessageEntity;
+            }
             s = stringUtil.join2innerJoin(s);
             //创建输入字节流
             ANTLRInputStream input = new ANTLRInputStream(s);
@@ -94,6 +101,8 @@ public class MergedTest {
 
         // 建多个相同表
 //        String s = "CREATE TABLE tableD (bar int, foo float);";
+//        String s = "create table mrtest_50 (a String, b int)";
+//        String s = "create table mrtest_502 (name String, age int, city int)";
 
         // 条件允许时，没有将条目少的表放在join左侧，条目多的表放在join右侧
 //        String s = "SELECT t1.name, t2.age FROM mrtest_10 as t1 JOIN mrtest_500 as t2 ON t1.city=t2.city;";
@@ -120,6 +129,7 @@ public class MergedTest {
 //        String s = "select name from partitiontable;";  // AP
 //        String s = "select name from partitiontable where name='cn';";  // AP
 //        String s = "select name from partitiontable where city='changzhou';";
+        String s = "select name from partitiontable where city='changzhou' and name+1='cn';";
 
         // select的列未在group by中
 //        String s = "select name, city, avg(age) from t group by name;";  // AP
@@ -129,7 +139,11 @@ public class MergedTest {
 //        String s = "select p1.name from mrtest_500 p1 join (select city from mrtest_50) p2 on p1.city = p2.city where p1.city = 1;";
 
         // 不要过多使用join
-        String s = "select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id;";
+//        String s = "select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id;";
+
+        // 错误的语句
+//        String s = "12345";
+//        String s = "啊啦啦啦";
 
         astCheck(s);
 

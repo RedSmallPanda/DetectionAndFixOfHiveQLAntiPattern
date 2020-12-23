@@ -24,6 +24,7 @@ public class MergedTest {
             s = s.replace(";", "");
             if(!SqlParseCheck.sqlParseCheck(s)){
                 ReturnMessageEntity returnMessageEntity = new ReturnMessageEntity();
+                System.out.println("This HiveQL may be illegal, please check your input or the database connection.");
                 returnMessageEntity.addSuggestion("This HiveQL may be illegal, please check your input or the database connection.");
                 return returnMessageEntity;
             }
@@ -129,7 +130,7 @@ public class MergedTest {
 //        String s = "select name from partitiontable;";  // AP
 //        String s = "select name from partitiontable where name='cn';";  // AP
 //        String s = "select name from partitiontable where city='changzhou';";
-        String s = "select name from partitiontable where city='changzhou' and name+1='cn';";
+//        String s = "select name from partitiontable where city='changzhou' and name+1='cn';";
 
         // select的列未在group by中
 //        String s = "select name, city, avg(age) from t group by name;";  // AP
@@ -142,7 +143,7 @@ public class MergedTest {
 //        String s = "select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id;";
 
         // 错误的语句
-//        String s = "12345";
+        String s = "12345";
 //        String s = "啊啦啦啦";
 
         astCheck(s);

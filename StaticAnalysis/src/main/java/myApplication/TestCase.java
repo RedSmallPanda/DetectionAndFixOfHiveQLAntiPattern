@@ -107,13 +107,13 @@ public class TestCase {
                 {{"select t1.a from t2 where t3.b = t4.b"}, {"13"}}
         };
         HashMap<String, String> apMap = new HashMap<String, String>();
-        apMap.put("1", "不要过多使用join");
-        apMap.put("2.1", "不要在where子句中进行运算");
-        apMap.put("2.2", "不要在join子句中进行运算");
+        apMap.put("1", "Do not use too many 'Join' clauses.");
+        apMap.put("2.1", "Do not calculate in 'where'.");
+        apMap.put("2.2", "Do not calculate in 'join'.");
         apMap.put("3", "Be careful! Using \"select *\" will cause poor performance! Please select specific column.");
         apMap.put("4", "Be careful! Using \"order by\" will cause poor performance! Please use \"sort by\".");
         apMap.put("5", "Be careful! Using \"having\" will cause poor performance! Please use \"where\".");
-        apMap.put("6", "不要在谓词中使用函数");
+        apMap.put("6", "Do not invoke function in predication.");
         apMap.put("7", "Warning! Column selected should be concluded in group by");
         apMap.put("8", "Be careful! Using \"interval\" in \"date_sub()\" will cause error!");
         apMap.put("9", "Be careful! Data type after \"then\" and \"else\" is different!");

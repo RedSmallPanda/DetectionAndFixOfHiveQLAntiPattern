@@ -44,8 +44,8 @@ public class TestFixListener extends HplsqlBaseListener {
         //判断join个数是否超过一个
 //        System.out.println("There is "+joinNum+" join");
         if(joinNum > 1){
-            System.out.println("不要过多使用join");
-            returnMessageEntity.addSuggestion("不要过多使用join");
+            System.out.println("Do not use too many 'Join' clauses.");
+            returnMessageEntity.addSuggestion("Do not use too many 'Join' clauses.");
             returnMessageEntity.setJoinParams(null);
         }
         joinNum = 0;
@@ -660,8 +660,8 @@ public class TestFixListener extends HplsqlBaseListener {
                 //什么都不干
             }
             else{
-                System.out.println("不要在谓词中使用函数");
-                returnMessageEntity.addSuggestion("不要在谓词中使用函数");
+                System.out.println("Do not invoke function in predication.");
+                returnMessageEntity.addSuggestion("Do not invoke function in predication.");
             }
 
             //判断是否在where后的布尔表达式中进行了四则运算
@@ -670,8 +670,8 @@ public class TestFixListener extends HplsqlBaseListener {
 
             }
             else{
-                System.out.println("不要在where子句中进行运算");
-                returnMessageEntity.addSuggestion("不要在where子句中进行运算");
+                System.out.println("Do not calculate in 'where'.");
+                returnMessageEntity.addSuggestion("Do not calculate in 'where'.");
             }
         }
         if(hasJoin){
@@ -691,8 +691,8 @@ public class TestFixListener extends HplsqlBaseListener {
                 //什么都不干
             }
             else{
-                System.out.println("不要在谓词中使用函数");
-                returnMessageEntity.addSuggestion("不要在谓词中使用函数");
+                System.out.println("Do not invoke function in predication.");
+                returnMessageEntity.addSuggestion("Do not invoke function in predication.");
             }
 
             //判断是否在on后的布尔表达式中进行了四则运算
@@ -700,8 +700,8 @@ public class TestFixListener extends HplsqlBaseListener {
                     && rightSymbol.T_ADD() == null && rightSymbol.T_SUB() == null && rightSymbol.T_MUL() == null && rightSymbol.T_DIV() == null) {
                 //什么都不干
             } else {
-                System.out.println("不要在join子句中进行运算");
-                returnMessageEntity.addSuggestion("不要在join子句中进行运算");
+                System.out.println("Do not calculate in 'join'.");
+                returnMessageEntity.addSuggestion("Do not calculate in 'join'.");
             }
 
             //TODO:处理别名的情况

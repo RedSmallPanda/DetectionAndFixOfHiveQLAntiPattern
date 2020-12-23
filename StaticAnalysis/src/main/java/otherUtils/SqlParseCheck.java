@@ -30,23 +30,23 @@ public class SqlParseCheck {
                 Statement ps=connection.createStatement()
         )
         {
-            ResultSet r = ps.executeQuery("explain " + sql);
-            while (r.next()) {
-                System.out.println(r.getString(1));
-            }
+            ps.execute("explain " + sql);
         } catch (HiveSQLException e){
+            // HiveQL无法解析报ParseException，ErrorCode是40000
+            // 还可能报语义错误
 //            e.printStackTrace();
             if(e.getErrorCode() == 40000){
-                return false;
+                // 还有可能因为安全原因拒绝检查
+                return e.toString().contains("SemanticException Cartesian products are disabled for safety reasons.");
             }
         } catch (SQLException e){
-//            e.printStackTrace();
+            // 还可能有网络连接问题
             return false;
         }
         return true;
     }
 
     public static void main(String[] args) {
-        System.out.println(sqlParseCheck("aselect * from a"));
+        System.out.println(sqlParseCheck("select t1.city from t1 join t2"));
     }
 }

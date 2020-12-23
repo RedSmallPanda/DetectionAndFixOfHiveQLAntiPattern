@@ -69,15 +69,37 @@ public class TestCase {
                 {{"select current_timestamp() - INTERVAL 10 second from a join b on a.id = b.id;"}, {}},
                 {{"SELECT ID,CASE WHEN col_a = 0 THEN 0 ELSE (col_b / col_a) - col_a END AS math_is_fun FROM t1;"}, {"9"}},
                 {{"SELECT ID,CASE WHEN col_a = 0 THEN 0 ELSE 2.2 END AS math_is_fun FROM t1;"}, {"9"}},
+                {{"SELECT ID,CASE WHEN col_a = 2 THEN 0 ELSE col_a END AS math_is_fun FROM (select t3.col_a,t2.col_b from t3 join t2 on t3.id = t2.id) as t1;"}, {}},
                 {{"SELECT ID,CASE WHEN col_a = 2.2 THEN 0 ELSE col_a END AS math_is_fun FROM (select t3.col_a,t2.col_b from t3 join t2 on t3.id = t2.id) as t1;"}, {"9"}},
                 {{"SELECT ID,CASE WHEN col_a = 0 THEN 0 ELSE 2 END AS math_is_fun FROM (select t3.col_a,t2.col_b from t3 join t2 on t3.id = t2.id) as t1;"}, {}},
                 {{"select sum(col1),col2 from (select t1.col1,t1.col2,t2.col3 from t1 join t2 on t1.id = t2.id group by t1.col1) as t1 group by col1,col2;"}, {"7","10"}},
-                {{"select count( distinct cookie ) from weblogs where dt <= ${today} and dt >= ${90daysAgo};"}, {"11"}},
+                {{"select count( distinct cookie ) from weblogs where dt <= ${today} and dt >= ${90daysAgo};"}, {"13"}},
                 {{"select count(cookie) from weblogs where dt <= ${today} and dt >= ${90daysAgo};"}, {}},
                 {{"select count(col1) from (select distinct col1 from t2 where col2 > 100) as t1"}, {}},
                 {{"select count(distinct col1) from (select col2,col1 from t2 where col2 >100) as t1"}, {"11"}},
                 {{"select col1 from (select count(distinct col2) from t2 where col2 > 100) as t1"}, {"11"}},
                 {{"select col1，col2 from table1 where col1 like 'p%'"}, {}},
+                {{"select t1.name from mrtest_10 as t2 join mrtest_50 t1 on t1.city = t2.city"}, {}},
+                {{"select t1.city, avg(t1.age) from mrtest_10 t1 join mrtest_50 t2 on t1.city = t2.city group by t1.city"}, {}},
+                {{"select t1.col1 from t1 join t2 on t1.id=t2.id"}, {}},
+                {{"select t1.name from (select t2.name from mrtest_10 t2 join mrtest_50 t3 on t2.city=t3.city) as t1 "}, {}},
+                {{"select t1.name from (select mrtest_10.name from mrtest_10 where mrtest_10.age>20) as t1 join mrtest_50 t2 on t1.city=t2.city "}, {}},
+                {{"select t1.name from (select mrtest_10.name from mrtest_50 where mrtest_50.age>20) as t1 join mrtest_10 t2 on t1.city=t2.city "}, {}},
+                {{"select t1.name from (select t2.name from mrtest_50 t2 join mrtest_10 t3 on t2.city=t3.city) as t1 "}, {"12"}},
+                {{"select t1.city, avg(t1.age) from mrtest_50 t1 join mrtest_10 t2 on t1.city = t2.city group by t1.city"}, {"12"}},
+                {{"select mrtest_50.name from mrtest_50 join mrtest_10 t2 on mrtest_50.city = t2.city"}, {"12"}},
+                {{"select t1.name from mrtest_10 t1 join mrtest_50 t2 on t1.city=t2.city join mrtest_500 t3 on t1.city=t3.city"}, {"1"}},
+                {{"select t1.name from mrtest_50 t1 join mrtest_10 t2 on t1.city=t2.city join mrtest_500 t3 on t1.city=t3.city"}, {"1","12"}},
+                {{"select t1.name from mrtest_10 t1 join mrtest_500 t2 on t1.city=t2.city join mrtest_50 t3 on t1.city=t3.city"}, {"1","12"}},
+                {{"create table mrtest_50 (name String, age int, city int)"}, {"14.1"}},
+                {{"create table mrtest_502 (name String, age int, city int)"}, {"14.2"}},
+                {{"create table mrtest_50 (a String, b int)"}, {"14.1"}},
+                {{"create table mrtest_502(a String, b int)"}, {}},
+                {{"select name from partitiontable;"}, {"15"}},
+                {{"select name from partitiontable where city='changzhou';"}, {}},
+                {{"select name from partitiontable where city='changzhou' and name='cn';"}, {}},
+                {{"select name from partitiontable where name+1='cn' and city='changzhou'"}, {}},
+                {{"select name from partitiontable where name='cn';"}, {"15"}},
                 {{"selct * from t1"}, {"13"}},
                 {{""}, {"13"}},
                 {{"123"}, {"13"}},
@@ -97,7 +119,11 @@ public class TestCase {
         apMap.put("9", "Be careful! Data type after \"then\" and \"else\" is different!");
         apMap.put("10", "Be careful! \"group by\" should be used with aggregate function!");
         apMap.put("11", "Be careful! Using \"count(distinct ...)\" may cause poor performance! Please use \"sum...group by\"");
+        apMap.put("12", "Please put the table containing less records on the left side of join. Or check if the metaData of related tables is correct.");
         apMap.put("13", "This HiveQL may be illegal, please check your input or the database connection.");
+        apMap.put("14.1", "Creating table \"mrtest_50\" is similar to existed table \"mrtest_50\", please check again.");
+        apMap.put("14.2", "Creating table \"mrtest_502\" is similar to existed table \"mrtest_mlp5\", please check again.");
+        apMap.put("15", "Warning! Please utilize partition in the query.");
 
         int testCaseNum = testCases.length;
         int testWrongNum = 0;

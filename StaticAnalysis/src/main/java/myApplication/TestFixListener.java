@@ -547,7 +547,13 @@ public class TestFixListener extends HplsqlBaseListener {
 
     // 建多个相同的表
     HashSet<String> colName = new HashSet<>();
-
+    String createTableName = null;
+    
+    @Override
+    public void enterTable_name(HplsqlParser.Table_nameContext ctx) {
+        createTableName = ctx.getText();
+    }
+    
     @Override
     public void enterCreate_table_columns_item(HplsqlParser.Create_table_columns_itemContext ctx){
         colName.add(ctx.getStart().getText());
@@ -555,9 +561,11 @@ public class TestFixListener extends HplsqlBaseListener {
 
     @Override
     public void exitCreate_table_stmt(HplsqlParser.Create_table_stmtContext ctx){
-        if(MysqlUtil.hasSameTable(colName)){
-            System.out.println("重复建表！");
-            returnMessageEntity.addSuggestion("重复建表！");
+        String table = MysqlUtil.hasSameTable(createTableName, colName);
+        if(table != null){
+            String tip = "Creating table \""+createTableName+"\" is similar to existed table \""+table+"\", please check again.";
+            System.out.println(tip);
+            returnMessageEntity.addSuggestion(tip);
         }
     }
 

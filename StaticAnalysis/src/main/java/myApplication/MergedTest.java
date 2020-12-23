@@ -101,6 +101,8 @@ public class MergedTest {
 
         // 建多个相同表
 //        String s = "CREATE TABLE tableD (bar int, foo float);";
+//        String s = "create table mrtest_50 (a String, b int)";
+//        String s = "create table mrtest_502 (name String, age int, city int)";
 
         // 条件允许时，没有将条目少的表放在join左侧，条目多的表放在join右侧
 //        String s = "SELECT t1.name, t2.age FROM mrtest_10 as t1 JOIN mrtest_500 as t2 ON t1.city=t2.city;";
@@ -127,6 +129,7 @@ public class MergedTest {
 //        String s = "select name from partitiontable;";  // AP
 //        String s = "select name from partitiontable where name='cn';";  // AP
 //        String s = "select name from partitiontable where city='changzhou';";
+        String s = "select name from partitiontable where city='changzhou' and name+1='cn';";
 
         // select的列未在group by中
 //        String s = "select name, city, avg(age) from t group by name;";  // AP
@@ -140,7 +143,7 @@ public class MergedTest {
 
         // 错误的语句
 //        String s = "12345";
-        String s = "啊啦啦啦";
+//        String s = "啊啦啦啦";
 
         astCheck(s);
 

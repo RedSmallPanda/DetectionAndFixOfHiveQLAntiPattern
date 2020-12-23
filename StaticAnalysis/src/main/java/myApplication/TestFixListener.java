@@ -46,6 +46,7 @@ public class TestFixListener extends HplsqlBaseListener {
         if(joinNum > 1){
             System.out.println("不要过多使用join");
             returnMessageEntity.addSuggestion("不要过多使用join");
+            returnMessageEntity.setJoinParams(null);
         }
         joinNum = 0;
 
@@ -216,6 +217,22 @@ public class TestFixListener extends HplsqlBaseListener {
             FromJoinTable tempTable1 = new FromJoinTable();
             tempTable1.setNameAlias(new String[]{tableName1,alias1});
             selectStmt.addTable(tempTable1);
+        }
+        else if(ctx.from_table_clause().from_subselect_clause() != null){
+            String subSelectAlias;
+            if (ctx.from_table_clause().from_subselect_clause().from_alias_clause() != null) {
+                subSelectAlias = ctx.from_table_clause().from_subselect_clause().from_alias_clause().ident().getText();
+            } else {
+                subSelectAlias = null;
+            }
+            FromJoinTable tempTable = new FromJoinTable();
+            SelectStmt currSelectStmt = new SelectStmt();
+            selectStmtList.add(currSelectStmt);
+            tempTable.setSubSelectStmt(currSelectStmt);
+            tempTable.setSubSelectAlias(subSelectAlias);
+            tempTable.setSubSelect(true);
+            selectStmt.addTable(tempTable);
+            selectStmt = currSelectStmt;
         }
 
         tableName = ctx.getStop().getText();

@@ -285,8 +285,12 @@ public class TestFixListener extends HplsqlBaseListener {
         if(ctx.T_ON() != null) {
             //判断join子句中是否存在 + / - / * / /
             HplsqlParser.Bool_expr_binaryContext boolBinaryContext;
+
+            if(ctx.bool_expr().bool_expr_logical_operator() != null){
+                return;
+            }
             //表达式两侧不存在括号的情况
-            if (ctx.bool_expr().T_OPEN_P() == null) {
+            else if (ctx.bool_expr().T_OPEN_P() == null) {
                 boolBinaryContext = ctx.bool_expr().bool_expr_atom().bool_expr_binary();
             }
             //表达式两侧存在括号

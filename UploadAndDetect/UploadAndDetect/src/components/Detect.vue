@@ -162,7 +162,7 @@ export default {
       _this
       .$axios({
         // create api
-        methods: "get",
+        method: "get",
         url: _this.api2url+'/join_check',
         params:{
           t1_name:_this.t1_name,

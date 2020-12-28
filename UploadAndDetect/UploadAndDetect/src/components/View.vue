@@ -62,7 +62,7 @@ export default {
       console.log("View Config, ready to get configures");
       const _this = this;
       _this.$axios({
-        methods: "get",
+        method: "get",
         url: _this.api2url+"/configGet",
       }).then(function(response){
         console.log("get data");

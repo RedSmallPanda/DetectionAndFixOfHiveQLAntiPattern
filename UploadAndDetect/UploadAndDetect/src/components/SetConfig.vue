@@ -38,8 +38,12 @@ export default {
   data() {
     return {
       formInline: {
-        user: "",
-        region: "",
+        mysqlUrl:" ",
+        mysqlUsername: " ",
+        mysqlPassword: " ",
+        url:" ",
+        username: " ",
+        password: "",
       }
     }
   },

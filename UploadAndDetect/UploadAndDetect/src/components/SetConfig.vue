@@ -40,6 +40,7 @@
 </template>
 
 <script>
+import qs from "qs";
 export default {
   data() {
     return {
@@ -54,9 +55,9 @@ export default {
       api2url: this.common.api2url,
     };
   },
-  mounted:function(){
-      this.getConfig();//需要触发的函数
-    },
+  mounted: function () {
+    this.getConfig(); //需要触发的函数
+  },
   methods: {
     onSubmit() {
       console.log("submit!");
@@ -74,7 +75,18 @@ export default {
             username: _this.formInline.username,
             password: _this.formInline.password,
           },
-          headers:{'Content-Type': 'application/x-www-form-urlencoded'},
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          transformRequest: function (obj) {
+            var str = [];
+            for (var p in obj) {
+              str.push(
+                encodeURIComponent(p) + "=" + encodeURIComponent(obj[p])
+              );
+            }
+            return str.join("&");
+          },
         })
         .then(function (response) {
           console.log(response);
@@ -92,23 +104,25 @@ export default {
           }
         });
     },
-    getConfig(){
+    getConfig() {
       console.log("View Config, ready to get configures");
       const _this = this;
-      _this.$axios({
-        method: "get",
-        url: _this.api2url+"/configGet",
-      }).then(function(response){
-        console.log("get data");
-        console.log(response.data); // print data
-        _this.formInline.mysqlUrl = response.data.mysqlUrl;
-        _this.formInline.mysqlUsername = response.data.mysqlUsername;
-        _this.formInline.mysqlPassword = response.data.mysqlPassword;
-        _this.formInline.url = response.data.url;
-        _this.formInline.username = response.data.username;
-        _this.formInline.password = response.data.password;
-      });
-    }
+      _this
+        .$axios({
+          method: "get",
+          url: _this.api2url + "/configGet",
+        })
+        .then(function (response) {
+          console.log("get data");
+          console.log(response.data); // print data
+          _this.formInline.mysqlUrl = response.data.mysqlUrl;
+          _this.formInline.mysqlUsername = response.data.mysqlUsername;
+          _this.formInline.mysqlPassword = response.data.mysqlPassword;
+          _this.formInline.url = response.data.url;
+          _this.formInline.username = response.data.username;
+          _this.formInline.password = response.data.password;
+        });
+    },
   },
 };
 </script>

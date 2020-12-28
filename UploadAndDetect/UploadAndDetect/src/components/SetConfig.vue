@@ -64,9 +64,9 @@ export default {
       _this
         .$axios({
           // create api
-          methods: "post",
+          method: "post",
           url: _this.api2url + "/configSet",
-          params: {
+          data: {
             mysqlUrl: _this.formInline.mysqlUrl,
             mysqlUsername: _this.formInline.mysqlUsername,
             mysqlPassword: _this.formInline.mysqlPassword,
@@ -74,8 +74,10 @@ export default {
             username: _this.formInline.username,
             password: _this.formInline.password,
           },
+          headers:{'Content-Type': 'application/x-www-form-urlencoded'},
         })
         .then(function (response) {
+          console.log(response);
           if (response.status == 200) {
             console.log("save successfully");
             _this.$message({
@@ -94,7 +96,7 @@ export default {
       console.log("View Config, ready to get configures");
       const _this = this;
       _this.$axios({
-        methods: "get",
+        method: "get",
         url: _this.api2url+"/configGet",
       }).then(function(response){
         console.log("get data");

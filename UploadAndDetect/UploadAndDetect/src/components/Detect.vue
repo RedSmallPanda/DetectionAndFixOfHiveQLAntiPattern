@@ -129,9 +129,9 @@ export default {
       _this
         .$axios({
           //创建接口
-          methods: "get", //类型为get请求
+          method: "post", //类型为get请求
           url: _this.api1url + "/astCheck", //请求的接口地址
-          params: {
+          data: {
             hiveql: this.hiveQL,
           },
         })

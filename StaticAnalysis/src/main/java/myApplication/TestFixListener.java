@@ -44,16 +44,20 @@ public class TestFixListener extends HplsqlBaseListener {
         //判断join个数是否超过一个
 //        System.out.println("There is "+joinNum+" join");
         if(joinNum > 1){
-            System.out.println("不要过多使用join");
-            returnMessageEntity.addSuggestion("不要过多使用join");
+            System.out.println("Do not use too many 'Join' clauses.");
+            returnMessageEntity.addSuggestion("Do not use too many 'Join' clauses.");
+            returnMessageEntity.setJoinParams(null);
         }
         joinNum = 0;
-
 
         //TODO:测试修复
         testST.add("stmt",selectStmt);
         String res = regexCheck(testST.render());
-        System.out.println("\nFixed HiveQL:\n"+res);
+        //完全正确的情况添加提醒
+        if(returnMessageEntity.getFixedSuggestions().size() == 0){
+            returnMessageEntity.addSuggestion("Correct HQL.");
+        }
+        System.out.println("-Fixed HiveQL:\n"+res+"\n");
         returnMessageEntity.setFixedHiveql(res);
     }
 
@@ -65,7 +69,7 @@ public class TestFixListener extends HplsqlBaseListener {
     // 在date_sub()中使用interval
     public String dateSubIntervalCheck(String s){
         s = s.toLowerCase();
-        String pattern = "(date_\\S+?\\s*\\(.+?,\\s*)(interval\\s*'*(\\d*)'*\\s*day)\\)";
+        String pattern = "(date_\\S+?\\s*\\(.+?,\\s*)(interval\\s*'*(\\d*)'*\\s*day(s)?)\\)";
         Pattern r = Pattern.compile(pattern);
         Matcher m = r.matcher(s);
         boolean printFlag = false;
@@ -168,7 +172,7 @@ public class TestFixListener extends HplsqlBaseListener {
 
                 //TODO:修复过程构建table token
                 tempTable2.setJoinType(ctx.from_join_clause(0).from_join_type_clause().getText());
-                tempTable2.setOnCondition(ctx.from_join_clause(0).bool_expr().getText());
+                tempTable2.setOnCondition(getAllBoolExpr(ctx.from_join_clause(0).bool_expr()));
 //                selectStmt.addTable(tempTable2);
 
 
@@ -214,6 +218,22 @@ public class TestFixListener extends HplsqlBaseListener {
             tempTable1.setNameAlias(new String[]{tableName1,alias1});
             selectStmt.addTable(tempTable1);
         }
+        else if(ctx.from_table_clause().from_subselect_clause() != null){
+            String subSelectAlias;
+            if (ctx.from_table_clause().from_subselect_clause().from_alias_clause() != null) {
+                subSelectAlias = ctx.from_table_clause().from_subselect_clause().from_alias_clause().ident().getText();
+            } else {
+                subSelectAlias = null;
+            }
+            FromJoinTable tempTable = new FromJoinTable();
+            SelectStmt currSelectStmt = new SelectStmt();
+            selectStmtList.add(currSelectStmt);
+            tempTable.setSubSelectStmt(currSelectStmt);
+            tempTable.setSubSelectAlias(subSelectAlias);
+            tempTable.setSubSelect(true);
+            selectStmt.addTable(tempTable);
+            selectStmt = currSelectStmt;
+        }
 
         tableName = ctx.getStop().getText();
     }
@@ -231,8 +251,10 @@ public class TestFixListener extends HplsqlBaseListener {
     //anti-pattern:过多使用join
     //anti-pattern:不要在join子句中进行运算
     //anti-pattern:将不同数据类型的字段进行join
+    Boolean hasJoin = false;
     @Override
     public void enterFrom_join_clause(HplsqlParser.From_join_clauseContext ctx) {
+        hasJoin = true;
         //累加join个数
         joinNum = joinNum + 1;
 
@@ -248,7 +270,7 @@ public class TestFixListener extends HplsqlBaseListener {
             FromJoinTable tempTable = new FromJoinTable();
             tempTable.setNameAlias(new String[]{tableName, tableAlias});
             tempTable.setJoinType(ctx.from_join_type_clause().getText());
-            tempTable.setOnCondition(ctx.bool_expr().getText());
+            tempTable.setOnCondition(getAllBoolExpr(ctx.bool_expr()));
             selectStmt.addTable(tempTable);
 
             //TODO:修复两表顺序
@@ -270,7 +292,7 @@ public class TestFixListener extends HplsqlBaseListener {
             tempTable.setSubSelectAlias(subSelectAlias);
             tempTable.setSubSelect(true);
             tempTable.setJoinType(ctx.from_join_type_clause().getText());
-            tempTable.setOnCondition(ctx.bool_expr().getText());
+            tempTable.setOnCondition(getAllBoolExpr(ctx.bool_expr()));
             selectStmt.addTable(tempTable);
             selectStmt = currSelectStmt;
         }
@@ -280,8 +302,12 @@ public class TestFixListener extends HplsqlBaseListener {
         if(ctx.T_ON() != null) {
             //判断join子句中是否存在 + / - / * / /
             HplsqlParser.Bool_expr_binaryContext boolBinaryContext;
+
+            if(ctx.bool_expr().bool_expr_logical_operator() != null){
+                return;
+            }
             //表达式两侧不存在括号的情况
-            if (ctx.bool_expr().T_OPEN_P() == null) {
+            else if (ctx.bool_expr().T_OPEN_P() == null) {
                 boolBinaryContext = ctx.bool_expr().bool_expr_atom().bool_expr_binary();
             }
             //表达式两侧存在括号
@@ -299,31 +325,31 @@ public class TestFixListener extends HplsqlBaseListener {
                 rightSymbol = rightSymbol.expr(0);
             }
 
-            //判断是否在on后的布尔表达式中使用了函数
-            if(leftSymbol.expr_func() == null && leftSymbol.expr_agg_window_func() == null
-                    && rightSymbol.expr_func() == null && rightSymbol.expr_agg_window_func() == null){
-                //什么都不干
-            }
-            else{
-                System.out.println("不要在谓词中使用函数");
-                returnMessageEntity.addSuggestion("不要在谓词中使用函数");
-            }
-
-            //判断是否在on后的布尔表达式中进行了四则运算
-            if (leftSymbol.T_ADD() == null && leftSymbol.T_SUB() == null && leftSymbol.T_MUL() == null && leftSymbol.T_DIV() == null
-                    && rightSymbol.T_ADD() == null && rightSymbol.T_SUB() == null && rightSymbol.T_MUL() == null && rightSymbol.T_DIV() == null) {
-                //什么都不干
-            } else {
-                System.out.println("不要在join子句中进行运算");
-                returnMessageEntity.addSuggestion("不要在join子句中进行运算");
-            }
-
-            //TODO:处理别名的情况
-            //判断是否将不同数据类型字段进行join
-            if(!MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(), rightSymbol.getChild(0).getText())){
-                System.out.println("不要将不同数据类型字段进行join");
-                returnMessageEntity.addSuggestion("不要将不同数据类型字段进行join");
-            }
+//            //判断是否在on后的布尔表达式中使用了函数
+//            if(leftSymbol.expr_func() == null && leftSymbol.expr_agg_window_func() == null
+//                    && rightSymbol.expr_func() == null && rightSymbol.expr_agg_window_func() == null){
+//                //什么都不干
+//            }
+//            else{
+//                System.out.println("不要在谓词中使用函数");
+//                returnMessageEntity.addSuggestion("不要在谓词中使用函数");
+//            }
+//
+//            //判断是否在on后的布尔表达式中进行了四则运算
+//            if (leftSymbol.T_ADD() == null && leftSymbol.T_SUB() == null && leftSymbol.T_MUL() == null && leftSymbol.T_DIV() == null
+//                    && rightSymbol.T_ADD() == null && rightSymbol.T_SUB() == null && rightSymbol.T_MUL() == null && rightSymbol.T_DIV() == null) {
+//                //什么都不干
+//            } else {
+//                System.out.println("不要在join子句中进行运算");
+//                returnMessageEntity.addSuggestion("不要在join子句中进行运算");
+//            }
+//
+//            //TODO:处理别名的情况
+//            //判断是否将不同数据类型字段进行join
+//            if(!MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(), rightSymbol.getChild(0).getText())){
+//                System.out.println("不要将不同数据类型字段进行join");
+//                returnMessageEntity.addSuggestion("不要将不同数据类型字段进行join");
+//            }
 
             //判断是否存在数据倾斜
             String[] table1 = leftSymbol.getChild(0).getText().split("\\.");
@@ -350,48 +376,73 @@ public class TestFixListener extends HplsqlBaseListener {
         }
     }
 
+    @Override
+    public void exitFrom_join_clause(HplsqlParser.From_join_clauseContext ctx) {
+        hasJoin = false;
+    }
+
+    public String getAllBoolExpr(HplsqlParser.Bool_exprContext boolExpr){
+        if(boolExpr.bool_expr_logical_operator() != null){
+            return getAllBoolExpr(boolExpr.bool_expr(0)) +" "+boolExpr.bool_expr_logical_operator().getText()
+                    +" "+getAllBoolExpr(boolExpr.bool_expr(1));
+        }
+        else if(boolExpr.bool_expr_atom() != null){
+            return boolExpr.bool_expr_atom().bool_expr_binary().getText();
+        }
+        else{
+            return getAllBoolExpr(boolExpr.bool_expr(0));
+        }
+    }
+
     //anti-pattern:不要在where字句中进行运算
     @Override
     public void enterWhere_clause(HplsqlParser.Where_clauseContext ctx) {
         hasWhere = true;
-        HplsqlParser.Bool_expr_binaryContext boolBinaryContext;
-        if(ctx.bool_expr().T_OPEN_P() == null){
-            if(ctx.bool_expr().bool_expr_atom() == null){
-                // 与其他情况可能冲突
-                return;
-            }
-            boolBinaryContext = ctx.bool_expr().bool_expr_atom().bool_expr_binary();
-        }
-        else{
-            boolBinaryContext = ctx.bool_expr().bool_expr(0).bool_expr_atom().bool_expr_binary();
-        }
-
-        //TODO:修复构建where条件部分
-        selectStmt.setWhereCondition(boolBinaryContext.getText());
-
-        HplsqlParser.ExprContext leftSymbol = boolBinaryContext.expr(0);
-        HplsqlParser.ExprContext rightSymbol = boolBinaryContext.expr(1);
-
-        //判断是否在where后的布尔表达式中使用了函数
-        if(leftSymbol.expr_func() == null && leftSymbol.expr_agg_window_func() == null
-                && rightSymbol.expr_func() == null && rightSymbol.expr_agg_window_func() == null){
-            //什么都不干
-        }
-        else{
-            System.out.println("不要在谓词中使用函数");
-            returnMessageEntity.addSuggestion("不要在谓词中使用函数");
-        }
-
-        //判断是否在where后的布尔表达式中进行了四则运算
-        if(leftSymbol.T_ADD() == null && leftSymbol.T_SUB() == null && leftSymbol.T_MUL() == null && leftSymbol.T_DIV() == null
-                && rightSymbol.T_ADD() == null && rightSymbol.T_SUB() == null && rightSymbol.T_MUL() == null && rightSymbol.T_DIV() == null){
-
-        }
-        else{
-            System.out.println("不要在where子句中进行运算");
-            returnMessageEntity.addSuggestion("不要在where子句中进行运算");
-        }
+//        HplsqlParser.Bool_expr_binaryContext boolBinaryContext;
+//        if(ctx.bool_expr().T_OPEN_P() == null){
+//            if(ctx.bool_expr().bool_expr_atom() == null){
+//                // 与其他情况可能冲突
+//                return;
+//            }
+//            boolBinaryContext = ctx.bool_expr().bool_expr_atom().bool_expr_binary();
+//        }
+//        else{
+//            boolBinaryContext = ctx.bool_expr().bool_expr(0).bool_expr_atom().bool_expr_binary();
+//        }
+//
+//        //TODO:修复构建where条件部分
+//        selectStmt.setWhereCondition(boolBinaryContext.getText());
+//
+//        HplsqlParser.ExprContext leftSymbol = boolBinaryContext.expr(0);
+//        HplsqlParser.ExprContext rightSymbol = boolBinaryContext.expr(1);
+//
+//        //判断是否在where后的布尔表达式中使用了函数
+//        if(leftSymbol.expr_func() == null && leftSymbol.expr_agg_window_func() == null
+//                && rightSymbol.expr_func() == null && rightSymbol.expr_agg_window_func() == null){
+//            //什么都不干
+//        }
+//        else{
+//            System.out.println("不要在谓词中使用函数");
+//            returnMessageEntity.addSuggestion("不要在谓词中使用函数");
+//        }
+//
+//        //判断是否在where后的布尔表达式中进行了四则运算
+//        if(leftSymbol.T_ADD() == null && leftSymbol.T_SUB() == null && leftSymbol.T_MUL() == null && leftSymbol.T_DIV() == null
+//                && rightSymbol.T_ADD() == null && rightSymbol.T_SUB() == null && rightSymbol.T_MUL() == null && rightSymbol.T_DIV() == null){
+//
+//        }
+//        else{
+//            System.out.println("不要在where子句中进行运算");
+//            returnMessageEntity.addSuggestion("不要在where子句中进行运算");
+//        }
+        selectStmt.setWhereCondition(getAllBoolExpr(ctx.bool_expr()));
     }
+
+    @Override
+    public void exitWhere_clause(HplsqlParser.Where_clauseContext ctx) {
+        hasWhere = false;
+    }
+
     // 使用select *
     @Override
     public void enterSelect_list_asterisk(HplsqlParser.Select_list_asteriskContext ctx){
@@ -399,6 +450,9 @@ public class TestFixListener extends HplsqlBaseListener {
                 "specific column.");
         returnMessageEntity.addSuggestion("Be careful! Using \"select *\" will cause poor performance! Please select " +
                 "specific column.");
+        selectStmt.addColumn("column1",null);
+        selectStmt.addColumn("...",null);
+        selectStmt.addColumn("columnN",null);
     }
 
     // 使用having进行过滤
@@ -541,7 +595,13 @@ public class TestFixListener extends HplsqlBaseListener {
 
     // 建多个相同的表
     HashSet<String> colName = new HashSet<>();
-
+    String createTableName = null;
+    
+    @Override
+    public void enterTable_name(HplsqlParser.Table_nameContext ctx) {
+        createTableName = ctx.getText();
+    }
+    
     @Override
     public void enterCreate_table_columns_item(HplsqlParser.Create_table_columns_itemContext ctx){
         colName.add(ctx.getStart().getText());
@@ -549,9 +609,11 @@ public class TestFixListener extends HplsqlBaseListener {
 
     @Override
     public void exitCreate_table_stmt(HplsqlParser.Create_table_stmtContext ctx){
-        if(MysqlUtil.hasSameTable(colName)){
-            System.out.println("重复建表！");
-            returnMessageEntity.addSuggestion("重复建表！");
+        String table = MysqlUtil.hasSameTable(createTableName, colName);
+        if(table != null){
+            String tip = "Creating table \""+createTableName+"\" is similar to existed table \""+table+"\", please check again.";
+            System.out.println(tip);
+            returnMessageEntity.addSuggestion(tip);
         }
     }
 
@@ -589,6 +651,65 @@ public class TestFixListener extends HplsqlBaseListener {
     public void enterBool_expr_atom(HplsqlParser.Bool_expr_atomContext ctx){
         if(hasWhere){
             whereItemList.add(ctx.getStart().getText());
+
+            HplsqlParser.ExprContext leftSymbol = ctx.bool_expr_binary().expr(0);
+            HplsqlParser.ExprContext rightSymbol = ctx.bool_expr_binary().expr(1);
+            //判断是否在where后的布尔表达式中使用了函数
+            if(leftSymbol.expr_func() == null && leftSymbol.expr_agg_window_func() == null
+                    && rightSymbol.expr_func() == null && rightSymbol.expr_agg_window_func() == null){
+                //什么都不干
+            }
+            else{
+                System.out.println("Do not invoke function in predication.");
+                returnMessageEntity.addSuggestion("Do not invoke function in predication.");
+            }
+
+            //判断是否在where后的布尔表达式中进行了四则运算
+            if(leftSymbol.T_ADD() == null && leftSymbol.T_SUB() == null && leftSymbol.T_MUL() == null && leftSymbol.T_DIV() == null
+                    && rightSymbol.T_ADD() == null && rightSymbol.T_SUB() == null && rightSymbol.T_MUL() == null && rightSymbol.T_DIV() == null){
+
+            }
+            else{
+                System.out.println("Do not calculate in 'where'.");
+                returnMessageEntity.addSuggestion("Do not calculate in 'where'.");
+            }
+        }
+        if(hasJoin){
+            HplsqlParser.ExprContext leftSymbol = ctx.bool_expr_binary().expr(0);
+            //处理子表达式存在括号的情况
+            if(leftSymbol.getChild(0).getText().equals("(")){
+                leftSymbol = leftSymbol.expr(0);
+            }
+            HplsqlParser.ExprContext rightSymbol = ctx.bool_expr_binary().expr(1);
+            if(rightSymbol.getChild(0).getText().equals("(")){
+                rightSymbol = rightSymbol.expr(0);
+            }
+
+            //判断是否在on后的布尔表达式中使用了函数
+            if(leftSymbol.expr_func() == null && leftSymbol.expr_agg_window_func() == null
+                    && rightSymbol.expr_func() == null && rightSymbol.expr_agg_window_func() == null){
+                //什么都不干
+            }
+            else{
+                System.out.println("Do not invoke function in predication.");
+                returnMessageEntity.addSuggestion("Do not invoke function in predication.");
+            }
+
+            //判断是否在on后的布尔表达式中进行了四则运算
+            if (leftSymbol.T_ADD() == null && leftSymbol.T_SUB() == null && leftSymbol.T_MUL() == null && leftSymbol.T_DIV() == null
+                    && rightSymbol.T_ADD() == null && rightSymbol.T_SUB() == null && rightSymbol.T_MUL() == null && rightSymbol.T_DIV() == null) {
+                //什么都不干
+            } else {
+                System.out.println("Do not calculate in 'join'.");
+                returnMessageEntity.addSuggestion("Do not calculate in 'join'.");
+            }
+
+            //TODO:处理别名的情况
+            //判断是否将不同数据类型字段进行join
+            if(!MysqlUtil.compareParamType(leftSymbol.getChild(0).getText(), rightSymbol.getChild(0).getText())){
+                System.out.println("不要将不同数据类型字段进行join");
+                returnMessageEntity.addSuggestion("不要将不同数据类型字段进行join");
+            }
         }
     }
 

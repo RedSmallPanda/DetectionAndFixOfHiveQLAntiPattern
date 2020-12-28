@@ -7,31 +7,76 @@ import mysqlUtils.MysqlUtil;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
+import otherUtils.SqlParseCheck;
 import otherUtils.stringUtil;
 import webAPI.ReturnMessageEntity;
 import webAPI.StaticCheckImp;
 
-public class MergedTest {
-    public static ReturnMessageEntity astCheck(String s){
-        //创建输入字节流
-        ANTLRInputStream input = new ANTLRInputStream(s);
-        //构建词法分析器
-        HplsqlLexer lexer = new HplsqlLexer(input);
-        //将词存储在内存中
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        //构建语法分析器
-        HplsqlParser parser = new HplsqlParser(tokens);
-        //构建解析树
-        ParseTree tree = parser.program();
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-        //构建树遍历器
-        ParseTreeWalker walker = new ParseTreeWalker();
-        //第一个参数是自己写的解析器
-//        walker.walk(new MergedListener(),tree);
+public class MergedTest {
+    public static ReturnMessageEntity astCheck(String s) {
         try {
+            System.out.println("-HiveQL:"+s);
+            System.out.println("-Suggestion:");
+            s = s.replace(";", "");
+            if(!SqlParseCheck.sqlParseCheck(s)){
+                ReturnMessageEntity returnMessageEntity = new ReturnMessageEntity();
+                System.out.println("This HiveQL may be illegal, please check your input or the database connection.");
+                returnMessageEntity.addSuggestion("This HiveQL may be illegal, please check your input or the database connection.");
+                return returnMessageEntity;
+            }
+            s = stringUtil.join2innerJoin(s);
+            //创建输入字节流
+            ANTLRInputStream input = new ANTLRInputStream(s);
+            //构建词法分析器
+            HplsqlLexer lexer = new HplsqlLexer(input);
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(HplsqlErrorListener.INSTANCE);
+            //将词存储在内存中
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            //构建语法分析器
+            HplsqlParser parser = new HplsqlParser(tokens);
+            parser.removeErrorListeners();
+            parser.addErrorListener(HplsqlErrorListener.INSTANCE);
+            //构建解析树
+            ParseTree tree = parser.program();
+
+            //构建树遍历器
+            ParseTreeWalker walker = new ParseTreeWalker();
+            //第一个参数是自己写的解析器
+//        walker.walk(new MergedListener(),tree);
+
+            //记录已做修复的AP，只有检测到这些警告，才会生成修复语句
+            String[] alreadyFixedPatternsAsList = {"Please put the table containing less records on the left side of join. Or check if the metaData of related tables is correct.",
+                    "Be careful! Using \"having\" will cause poor performance! Please use \"where\".",
+                    "Be careful! Using \"interval\" in \"date_sub()\" will cause error!",
+                    "Be careful! Using \"select *\" will cause poor performance! Please select specific column.",
+                    "Warning! Column selected should be concluded in group by",
+                    "Warning! Please utilize partition in the query."
+            };
+            List<String> alreadyFixedPatterns = Arrays.asList(alreadyFixedPatternsAsList);
+
             TestFixListener testFixListener = new TestFixListener();
             walker.walk(testFixListener, tree);
             ReturnMessageEntity returnMessageEntity = testFixListener.returnMessageEntity;
+            List<String> suggestionList = new ArrayList<>();
+            //判断是否检测到了已做修复的AP
+            int flag = 0;
+            //去重
+            for (int i = 0; i < returnMessageEntity.getFixedSuggestions().size(); i++) {
+                if (alreadyFixedPatterns.contains(returnMessageEntity.getFixedSuggestions().get(i))) {
+                    flag = 1;
+                }
+                if (!suggestionList.contains(returnMessageEntity.getFixedSuggestions().get(i))) {
+                    suggestionList.add(returnMessageEntity.getFixedSuggestions().get(i));
+                }
+            }
+            if (flag == 0) {
+                returnMessageEntity.setFixedHiveql(null);
+            }
             return returnMessageEntity;
         }
         catch(Exception e){
@@ -57,6 +102,8 @@ public class MergedTest {
 
         // 建多个相同表
 //        String s = "CREATE TABLE tableD (bar int, foo float);";
+//        String s = "create table mrtest_50 (a String, b int)";
+//        String s = "create table mrtest_502 (name String, age int, city int)";
 
         // 条件允许时，没有将条目少的表放在join左侧，条目多的表放在join右侧
 //        String s = "SELECT t1.name, t2.age FROM mrtest_10 as t1 JOIN mrtest_500 as t2 ON t1.city=t2.city;";
@@ -81,8 +128,9 @@ public class MergedTest {
 
         // 在有分区的表上没有使用分区查询
 //        String s = "select name from partitiontable;";  // AP
-        String s = "select name from partitiontable where name='cn';";  // AP
+//        String s = "select name from partitiontable where name='cn';";  // AP
 //        String s = "select name from partitiontable where city='changzhou';";
+//        String s = "select name from partitiontable where city='changzhou' and name+1='cn';";
 
         // select的列未在group by中
 //        String s = "select name, city, avg(age) from t group by name;";  // AP
@@ -91,9 +139,14 @@ public class MergedTest {
         // subselect
 //        String s = "select p1.name from mrtest_500 p1 join (select city from mrtest_50) p2 on p1.city = p2.city where p1.city = 1;";
 
-        s = stringUtil.join2innerJoin(s);
-        astCheck(s);
+        // 不要过多使用join
+//        String s = "select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id;";
 
+        // 错误的语句
+        String s = "12345";
+//        String s = "啊啦啦啦";
+
+        astCheck(s);
 
         //System.out.println(tree.toStringTree(parser));
 

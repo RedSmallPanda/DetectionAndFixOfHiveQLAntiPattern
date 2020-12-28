@@ -25,7 +25,7 @@ public class MergedListener extends HplsqlBaseListener {
         //判断join个数是否超过一个
 //        System.out.println("There is "+joinNum+" join");
         if(joinNum > 1){
-            System.out.println("不要过多使用join");
+            System.out.println("Do not use too many 'Join' clauses.");
         }
         joinNum = 0;
     }
@@ -147,7 +147,7 @@ public class MergedListener extends HplsqlBaseListener {
                 //什么都不干
             }
             else{
-                System.out.println("不要在谓词中使用函数");
+                System.out.println("Do not invoke function in predication.");
             }
 
             //判断是否在on后的布尔表达式中进行了四则运算
@@ -155,7 +155,7 @@ public class MergedListener extends HplsqlBaseListener {
                     && rightSymbol.T_ADD() == null && rightSymbol.T_SUB() == null && rightSymbol.T_MUL() == null && rightSymbol.T_DIV() == null) {
                 //什么都不干
             } else {
-                System.out.println("不要在join子句中进行运算");
+                System.out.println("Do not calculate in 'join'.");
             }
 
             //TODO:处理别名的情况
@@ -206,7 +206,7 @@ public class MergedListener extends HplsqlBaseListener {
             //什么都不干
         }
         else{
-            System.out.println("不要在谓词中使用函数");
+            System.out.println("Do not invoke function in predication.");
         }
 
         //判断是否在where后的布尔表达式中进行了四则运算
@@ -215,7 +215,7 @@ public class MergedListener extends HplsqlBaseListener {
 
         }
         else{
-            System.out.println("不要在where子句中进行运算");
+            System.out.println("Do not calculate in 'where'.");
         }
     }
     // 使用select *
@@ -315,6 +315,12 @@ public class MergedListener extends HplsqlBaseListener {
 
     // 建多个相同的表
     HashSet<String> colName = new HashSet<>();
+    String createTableName = null;
+
+    @Override
+    public void enterTable_name(HplsqlParser.Table_nameContext ctx) {
+        createTableName = ctx.getText();
+    }
 
     @Override
     public void enterCreate_table_columns_item(HplsqlParser.Create_table_columns_itemContext ctx){
@@ -323,8 +329,10 @@ public class MergedListener extends HplsqlBaseListener {
 
     @Override
     public void exitCreate_table_stmt(HplsqlParser.Create_table_stmtContext ctx){
-        if(MysqlUtil.hasSameTable(colName)){
-            System.out.println("重复建表！");
+        String table = MysqlUtil.hasSameTable(createTableName, colName);
+        if(table != null){
+            String tip = "Creating table \""+createTableName+"\" is similar to existed table \""+table+"\", please check again.";
+            System.out.println(tip);
         }
     }
 

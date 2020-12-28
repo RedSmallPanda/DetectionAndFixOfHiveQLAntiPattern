@@ -156,7 +156,7 @@ public class MysqlUtil {
         return(type1.equals(type2));
     }
 
-    public static boolean hasSameTable(HashSet<String> colName){
+    public static String hasSameTable(String tableName, HashSet<String> colName){
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             //FileInputStream in = new FileInputStream("C:/Users/Lenovo/Documents/GitHub/DetectionAndFixOfHiveQLAntiPattern/StaticAnalysis/src/main/resources/application.properties");
@@ -165,8 +165,17 @@ public class MysqlUtil {
             props.load(in);
             String url = props.getProperty("mysqlUrl");
             Connection connection = DriverManager.getConnection(url,props.getProperty("mysqlUsername"),props.getProperty("mysqlPassword"));
+            Statement ps2 = connection.createStatement();
+            ResultSet r = ps2.executeQuery("select TBL_NAME, SD_ID from TBLS");
+            Map<String, String> id2tableName = new HashMap<>();
+            while(r.next()){
+                if(tableName.equals(r.getString(1))){
+                    return r.getString(1);
+                }
+                id2tableName.put(r.getString(2), r.getString(1));
+            }
             PreparedStatement ps=connection.prepareStatement("select CD_ID, COLUMN_NAME from COLUMNS_V2");
-            ResultSet r=ps.executeQuery();
+            r=ps.executeQuery();
             Map<String, HashSet<String>> colNameDic = new HashMap<String, HashSet<String>>();
             while(r.next()){
                 String key = r.getString(1);
@@ -176,15 +185,17 @@ public class MysqlUtil {
                 }
                 colNameDic.get(key).add(value);
             }
-            if(colNameDic.containsValue(colName)){
-                return true;
+            for(String key : colNameDic.keySet()){
+                if(colNameDic.get(key).equals(colName)){
+                    return id2tableName.get(key);
+                }
             }
             ps.close();
             connection.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return null;
     }
 
     public static HashSet<String> partitionCheck(String tableName, List<String> whereItemList) {

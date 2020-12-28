@@ -44,7 +44,8 @@ export default {
         url:" ",
         username: " ",
         password: "",
-      }
+      },
+      api2url:this.common.api2url,
     }
   },
   mounted:function(){
@@ -60,18 +61,19 @@ export default {
     getConfig(){
       console.log("View Config, ready to get configures");
       const _this = this;
-      // _this.$axios({
-      //   methods:"get",
-      //   url:"",
-      // }).then(function(response){
-      //   console.log(response.data); // print data
-      //   _this.mysqlUrl = response.data.mysqlUrl;
-      //   _this.mysqlUsername = response.data.mysqlUsername;
-      //   _this.mysqlPassword = response.data.mysqlPassword;
-      //   _this.url = response.data.url;
-      //   _this.username = response.data.username;
-      //   _this.password = response.data.password;
-      // });
+      _this.$axios({
+        methods: "get",
+        url: _this.api2url+"/configGet",
+      }).then(function(response){
+        console.log("get data");
+        console.log(response.data); // print data
+        _this.formInline.mysqlUrl = response.data.mysqlUrl;
+        _this.formInline.mysqlUsername = response.data.mysqlUsername;
+        _this.formInline.mysqlPassword = response.data.mysqlPassword;
+        _this.formInline.url = response.data.url;
+        _this.formInline.username = response.data.username;
+        _this.formInline.password = response.data.password;
+      });
     }
   }
 }

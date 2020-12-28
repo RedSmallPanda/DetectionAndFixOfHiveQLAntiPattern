@@ -1,6 +1,7 @@
 package webAPI;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileInputStream;
@@ -22,7 +23,7 @@ public class Controller {
     }
 
     @RequestMapping(value = "/configSet", method = RequestMethod.POST)
-    public String config(@RequestParam Map<String, String> params){
+    public String configSet(@RequestParam Map<String, String> params){
         StringBuilder sb = new StringBuilder();
         try{
             FileInputStream in = new FileInputStream("src/main/resources/application.properties");
@@ -43,5 +44,25 @@ public class Controller {
             sb.replace(0, sb.length(), "Error!");
         }
         return sb.toString();
+    }
+    @RequestMapping(value = "/configGet", method = RequestMethod.GET)
+    public String configGet(){
+        String sb = "";
+        JSONObject jsonObject=new JSONObject();
+        try{
+            FileInputStream in = new FileInputStream("src/main/resources/application.properties");
+            Properties props = new Properties();
+            props.load(in);
+            in.close();
+            for(String key : props.stringPropertyNames()){
+                jsonObject.put(key,props.getProperty(key));
+            }
+            sb=jsonObject.toJSONString();
+
+        } catch (Exception e){
+            e.printStackTrace();
+            sb=" Get config Error!";
+        }
+        return sb;
     }
 }

@@ -52,7 +52,8 @@ public class JoinCheckImp {
             isEmpty = true;
         }
         if(isEmpty){
-            result.setRecommendReduceNum("table empty, can not recommend reduce num. Please check HiveQL or database connection");
+            result.setDataImbalancedSuggest("Tables may be empty, can not check data skew. Please check HiveQL or database connection.");
+            result.setRecommendReduceNum("Tables may be empty, can not recommend reduce num. Please check HiveQL or database connection.");
         }else{
             int recordNum1 = 0;
             for(int keyRecord : keyMap1.values()){

@@ -4,7 +4,7 @@
     <el-input
       type="textarea"
       :autosize="{ minRows: 5, maxRows: 25 }"
-      placeholder="请输入HiveQL"
+      placeholder="Enter HiveQL"
       v-model="hiveQL"
       :disabled="disableHiveQL"
     >
@@ -20,26 +20,30 @@
             <div slot="header" class="clearfix">
               <span>Detect Result</span>
             </div>
-            <div
+            <el-table
               v-loading="fixLoading"
-              element-loading-text="正在进行检测"
+              element-loading-text="Detecting, please wait..."
               element-loading-spinner="el-icon-loading"
-              element-loading-background="rgba(0, 0, 0, 0.8)"
+              element-loading-background="#606266"
+              :data="fixSuggestions"
+              style="width: 100%"
             >
-            <br>
-            HiveQL检测结果：{{ fixedHiveql }}
-            <br>
-            </div>
+              <el-table-column prop="id" label="ID" width="80">
+              </el-table-column>
+              <el-table-column prop="suggestion" label="Anti-Pattern" >
+              </el-table-column>
+            </el-table>
+
             <div
               v-if="isGetJoinResult"
               v-loading="joinLoading"
-              element-loading-text="正在检查数据倾斜"
+              element-loading-text="Checking data skew, this may cost 60 secs..."
               element-loading-spinner="el-icon-loading"
-              element-loading-background="rgba(0, 0, 0, 0.8)"
-              style="margin-top:10px;margin-bottom:10px"
+              element-loading-background="#606266"
+              class="text"
             >
             <br>
-            数据倾斜结果：{{ dataImbalancedSuggest }}
+              Data skew check：{{ dataImbalancedSuggest }}
             <br>
             </div>
           </el-card>
@@ -49,33 +53,29 @@
             <div slot="header" class="clearfix">
               <span>Fix Suggestions</span>
             </div>
-            <el-table
+            <div
               v-loading="fixLoading"
-              element-loading-text="正在进行修复"
+              element-loading-text="Fixing, please wait..."
               element-loading-spinner="el-icon-loading"
-              element-loading-background="rgba(0, 0, 0, 0.8)"
-              :data="fixSuggestions"
-              style="width: 100%"
+              element-loading-background="#606266"
+              class="text"
             >
-              <el-table-column prop="id" label="序号" width="80">
-              </el-table-column>
-              <el-table-column prop="suggestion" label="修复建议" >
-              </el-table-column>
-            </el-table>
-            <el-table
+              <br>
+              Fixed HiveQL：{{ fixedHiveql }}
+              <br>
+            </div>
+            <div
               v-if="isGetJoinResult"
               v-loading="joinLoading"
-              element-loading-text="正在推荐Reduce数量"
+              element-loading-text="Recommending reduce number, this may cost 60 secs..."
               element-loading-spinner="el-icon-loading"
-              element-loading-background="rgba(0, 0, 0, 0.8)"
-              :data="recommendReduceNum"
-              style="width: 100%"
+              element-loading-background="#606266"
+              class="text"
             >
-              <el-table-column prop="id" label="序号" width="80">
-              </el-table-column>
-              <el-table-column prop="recommend" label="推荐配置" >
-              </el-table-column>            
-            </el-table>
+              <br>
+              {{ recommendReduceNum }}
+              <br>
+            </div>
           </el-card>
         </el-col>
       </el-row>
@@ -94,7 +94,7 @@ export default {
       hiveQL: "",
       fixedHiveql: "",
       dataImbalancedSuggest: "",
-      recommendReduceNum:[],
+      recommendReduceNum:"",
       fixSuggestions:[
         // {
         //   id: "-1",
@@ -125,7 +125,7 @@ export default {
       _this.fixedHiveql = "";
       _this.fixSuggestions = [];
       _this.dataImbalancedSuggest = "";
-      _this.recommendReduceNum = [];
+      _this.recommendReduceNum = "";
       _this
         .$axios({
           //创建接口
@@ -170,11 +170,11 @@ export default {
           t2_name:_this.t2_name,
           t2_key:_this.t2_key
         }
-      }).then(function(response){    
+      }).then(function(response){
         _this.joinLoading = false;
         console.log(response.data); //打印请求的数据
         _this.dataImbalancedSuggest = response.data.dataImbalancedSuggest;
-        _this.recommendReduceNum = [{"id":1,"recommend":response.data.recommendReduceNum}];
+        _this.recommendReduceNum = response.data.recommendReduceNum;
       });
     }
   },
@@ -188,7 +188,10 @@ export default {
   margin-bottom: 10px;
 }
 .text {
+  margin-top:10px;
+  margin-bottom:10px;
   font-size: 14px;
+  color: #606266;
 }
 
 .item {

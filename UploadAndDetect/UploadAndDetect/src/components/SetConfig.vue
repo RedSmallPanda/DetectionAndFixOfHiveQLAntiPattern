@@ -83,7 +83,7 @@ export default {
           },
         })
         .then(function (response) {
-          console.log(response);
+          console.log(response.data);
           if (response.status == 200) {
             console.log("save successfully");
             _this.$message({

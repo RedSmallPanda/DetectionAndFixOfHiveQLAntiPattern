@@ -118,7 +118,7 @@ export default {
     detect() {
       var _this = this; //savve this
       // clear all history detection
-      _this.isGetFixResult = false;
+      _this.isGetFixResult = true;
       _this.isGetJoinResult = false;
       _this.fixLoading = true;
       _this.joinLoading = true;

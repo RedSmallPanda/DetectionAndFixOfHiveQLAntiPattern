@@ -13,7 +13,7 @@
     <div class="detect">
       <el-button type="primary" v-on:click="detect">Detect</el-button>
     </div>
-    <div style="clear: right" v-if="isGetFixResult">
+    <div style="clear: right" v-if="isStart">
       <el-row style="flex-direction: row; clear: right">
         <el-col :span="24">
           <el-card class="box-card">
@@ -54,6 +54,7 @@
               <span>Fix Suggestions</span>
             </div>
             <div
+              v-if="isGetFixResult"
               v-loading="fixLoading"
               element-loading-text="Fixing, please wait..."
               element-loading-spinner="el-icon-loading"
@@ -101,6 +102,7 @@ export default {
         //   suggestion: "test",
         // }
        ],
+      isStart: false,
       isGetFixResult: false,
       disableHiveQL: false,
       isGetJoinResult: false,
@@ -116,9 +118,10 @@ export default {
   },
   methods: {
     detect() {
-      var _this = this; //savve this
+      var _this = this; //save this
       // clear all history detection
-      _this.isGetFixResult = true;
+      _this.isStart = false;
+      _this.isGetFixResult = false;
       _this.isGetJoinResult = false;
       _this.fixLoading = true;
       _this.joinLoading = true;
@@ -137,13 +140,16 @@ export default {
         })
         .then(function (response) {
           //请求成功返回
-          _this.isGetFixResult = true ;
+          _this.isStart = true;
           _this.fixLoading = false ;
           console.log(response.data); //打印请求的数据
           _this.fixedHiveql = response.data.fixedHiveql;
           for(var i=0;i<response.data.fixedSuggestions.length;i++){
             console.log(response.data.fixedSuggestions[i]);
             _this.fixSuggestions.push({"id":i+1,"suggestion":response.data.fixedSuggestions[i]});
+          }
+          if (_this.fixedHiveql != null && _this.fixedHiveql !== ""){
+            _this.isGetFixResult = true;
           }
           console.log(response.data.fixedHiveql);
           console.log(response.data.joinParams);
@@ -175,6 +181,9 @@ export default {
         console.log(response.data); //打印请求的数据
         _this.dataImbalancedSuggest = response.data.dataImbalancedSuggest;
         _this.recommendReduceNum = response.data.recommendReduceNum;
+        if(_this.dataImbalancedSuggest === ""){
+          _this.dataImbalancedSuggest = "Data skew does not exist.";
+        }
       });
     }
   },

@@ -119,11 +119,11 @@ public class TestCase {
         apMap.put("9", "Be careful! Data type after \"then\" and \"else\" is different!");
         apMap.put("10", "Be careful! \"group by\" should be used with aggregate function!");
         apMap.put("11", "Be careful! Using \"count(distinct ...)\" may cause poor performance! Please use \"sum...group by\"");
-        apMap.put("12", "Please put the table containing less records on the left side of join. Or check if the metaData of related tables is correct.");
+        apMap.put("12", "Please put the table containing less records on the left side of join. Or check database connection.");
         apMap.put("13", "This HiveQL may be illegal, please check your input or the database connection.");
         apMap.put("14.1", "Creating table \"mrtest_50\" is similar to existed table \"mrtest_50\", please check again.");
         apMap.put("14.2", "Creating table \"mrtest_502\" is similar to existed table \"mrtest_mlp5\", please check again.");
-        apMap.put("15", "Warning! Please utilize partition in the query.");
+        apMap.put("15", "Warning! Please utilize partition in the query. Or check database connection.");
 
         int testCaseNum = testCases.length;
         int testWrongNum = 0;

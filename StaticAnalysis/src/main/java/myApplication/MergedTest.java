@@ -22,6 +22,7 @@ public class MergedTest {
             System.out.println("-HiveQL:"+s);
             System.out.println("-Suggestion:");
             s = s.replace(";", "");
+            s = s.replace("\n", " ");
             if(!SqlParseCheck.sqlParseCheck(s)){
                 ReturnMessageEntity returnMessageEntity = new ReturnMessageEntity();
                 System.out.println("This HiveQL may be illegal, please check your input or the database connection.");

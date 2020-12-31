@@ -180,9 +180,9 @@ public class TestFixListener extends HplsqlBaseListener {
                     //System.out.println(tableName1 + " " + tableName2);
                     //System.out.println(MysqlUtil.compareTwoTableRowNum(tableName1,tableName2));
                     System.out.println("Please put the table containing less records on the left side of join. " +
-                            "Or check if the metaData of related tables is correct.");
+                            "Or check database connection.");
                     returnMessageEntity.addSuggestion("Please put the table containing less records on the left side of join. " +
-                            "Or check if the metaData of related tables is correct.");
+                            "Or check database connection.");
                     selectStmt.setDataImbalanced(true);
                 };
 
@@ -627,7 +627,8 @@ public class TestFixListener extends HplsqlBaseListener {
         HashSet<String> partCol = MysqlUtil.partitionCheck(tableName, whereItemList);
         if(partCol != null){
             System.out.print("Warning! Please utilize partition in the query. Partition: ");
-            returnMessageEntity.addSuggestion("Warning! Please utilize partition in the query.");
+            returnMessageEntity.addSuggestion("Warning! Please utilize partition in the query. " +
+                    "Or check database connection.");
             String whereCd = selectStmt.getWhereCondition();
             StringBuilder whereCondition = new StringBuilder(whereCd==null ? "" : whereCd);
             boolean isFirst = true;

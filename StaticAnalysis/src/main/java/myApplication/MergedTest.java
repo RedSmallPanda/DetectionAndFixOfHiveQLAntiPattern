@@ -51,12 +51,12 @@ public class MergedTest {
 //        walker.walk(new MergedListener(),tree);
 
             //记录已做修复的AP，只有检测到这些警告，才会生成修复语句
-            String[] alreadyFixedPatternsAsList = {"Please put the table containing less records on the left side of join. Or check if the metaData of related tables is correct.",
+            String[] alreadyFixedPatternsAsList = {"Please put the table containing less records on the left side of join. Or check database connection.",
                     "Be careful! Using \"having\" will cause poor performance! Please use \"where\".",
                     "Be careful! Using \"interval\" in \"date_sub()\" will cause error!",
                     "Be careful! Using \"select *\" will cause poor performance! Please select specific column.",
                     "Warning! Column selected should be concluded in group by",
-                    "Warning! Please utilize partition in the query."
+                    "Warning! Please utilize partition in the query. Or check database connection."
             };
             List<String> alreadyFixedPatterns = Arrays.asList(alreadyFixedPatternsAsList);
 
@@ -129,7 +129,7 @@ public class MergedTest {
 
         // 在有分区的表上没有使用分区查询
 //        String s = "select name from partitiontable;";  // AP
-//        String s = "select name from partitiontable where name='cn';";  // AP
+        String s = "select name from partitiontable where name='cn';";  // AP
 //        String s = "select name from partitiontable where city='changzhou';";
 //        String s = "select name from partitiontable where city='changzhou' and name+1='cn';";
 
@@ -144,7 +144,7 @@ public class MergedTest {
 //        String s = "select t1.name,t2.age from t1 inner join t2 on t1.id = t2.id;";
 
         // 错误的语句
-        String s = "12345";
+//        String s = "12345";
 //        String s = "啊啦啦啦";
 
         astCheck(s);

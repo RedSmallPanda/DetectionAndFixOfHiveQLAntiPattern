@@ -675,7 +675,7 @@ public class TestFixListener extends HplsqlBaseListener {
                 returnMessageEntity.addSuggestion("Do not calculate in 'where'.");
             }
         }
-        if(hasJoin){
+        else if(hasJoin){
             HplsqlParser.ExprContext leftSymbol = ctx.bool_expr_binary().expr(0);
             //处理子表达式存在括号的情况
             if(leftSymbol.getChild(0).getText().equals("(")){

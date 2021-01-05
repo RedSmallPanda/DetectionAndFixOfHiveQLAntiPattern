@@ -1,0 +1,79 @@
+select_stmt(stmt) ::= <%
+Select <stmt.columns:column_opt_alias();separator=","> From <stmt.tables:from_join_clause()>
+<stmt:where_clause()><stmt:group_by_clause()><stmt:having_clause()><stmt:order_by_clause()>
+%>
+
+//处理列别名
+column_opt_alias(col) ::= <%
+<col.name>
+<if(col.alias)>
+<\ >as <col.alias>
+<endif>
+%>
+
+//处理表别名
+table_opt_alias(table) ::= <%
+<table.name>
+<if(table.alias)>
+<\ >as <table.alias>
+<endif>
+%>
+
+//处理subselect
+subselect_clause(stmt) ::= <%
+(<stmt:select_stmt()>)
+%>
+
+order_by_condition(condition) ::= <%
+<condition.expr>
+<if(condition.order)>
+<\ ><condition.order>
+<endif>
+%>
+
+//对应from_join_clause
+from_join_clause(table) ::= <%
+<if(table.joinType)>
+<\ ><table.joinType><\ >
+<endif>
+<if(table.tableNameAlias)>
+<table.tableNameAlias:table_opt_alias()>
+<endif>
+<if(table.isSubSelect)>
+<table.subSelectStmt:subselect_clause()>
+<if(table.subSelectAlias)>
+<\ ><table.subSelectAlias>
+<endif>
+<endif>
+<if(table.onCondition)>
+<\ >on <table.onCondition>
+<endif>
+%>
+
+//处理where_clause
+where_clause(stmt) ::= <%
+<if(stmt.whereCondition)>
+<\ >Where <stmt.whereCondition>
+<endif>
+%>
+
+//处理group_by_clause
+group_by_clause(stmt) ::= <%
+<if(stmt.groupByConditions)>
+<\ >Group By <stmt.groupByConditions;separator=",">
+<endif>
+%>
+
+//处理having_clause
+having_clause(stmt) ::= <%
+<if(stmt.havingCondition)>
+<\ >Having <stmt.havingCondition>
+<endif>
+%>
+
+//处理order_by_clause
+order_by_clause(stmt) ::= <%
+<if(stmt.orderByConditions)>
+<\ >Order By <stmt.orderByConditions:order_by_condition();separator=",">
+<endif>
+%>

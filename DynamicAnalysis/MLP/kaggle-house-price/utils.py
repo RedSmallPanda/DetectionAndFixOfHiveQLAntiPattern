@@ -19,6 +19,8 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 
+from Model import hidden_dim1, hidden_dim2
+
 
 def get_data(x, y, batch_size, shuffle):
     dataset = TensorDataset(x, y)
@@ -101,7 +103,7 @@ def pred(net, test_data, test_features):
     preds = np.exp(preds.numpy())
     test_data['time'] = pd.Series(preds.reshape(1, -1)[0])
     submission = pd.concat([test_data['t1'], test_data['key1'],test_data['t2'],test_data['key2'],test_data['reduce'],test_data['time']], axis=1)
-    submission.to_csv('hive_test2.csv', index=False)
+    submission.to_csv('hive_test_L'+str(hidden_dim1)+"_"+str(hidden_dim2)+'.csv', index=False)
     return submission
 
 def pred_raw(net,test_data,test_features):

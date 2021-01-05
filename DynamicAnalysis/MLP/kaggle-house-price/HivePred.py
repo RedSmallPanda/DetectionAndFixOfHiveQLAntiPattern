@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import torch
 from torch import nn
 from utils import train_model, pred,pred_train
-from Model import get_model
+from Model import get_model, hidden_dim1,hidden_dim2
 
-train = pd.read_csv('./all/joinMlpTrainTrainData_notest.csv')
-test = pd.read_csv('./all/joinMlpTrainTest.csv')
+train = pd.read_csv('./all/joinMlpTrainTrainData_L_notest.csv')
+test = pd.read_csv('./all/joinMlpTrainTest_L.csv')
 
 print('一共有 {} 个训练集样本'.format(train.shape[0]))
 print('一共有 {} 个测试集样本'.format(test.shape[0]))
@@ -57,7 +57,7 @@ print(net)
 
 # 可以调整的超参
 batch_size = 128
-epochs = 500
+epochs = 200
 lr = 0.01
 wd = 0
 use_gpu = True
@@ -68,6 +68,8 @@ train_model(net, train_features, train_labels, valid_features, valid_labels, epo
 train_model(net, train_valid_features, train_valid_labels, None, None, 1,
             batch_size, lr, wd, use_gpu)
 
-torch.save(net, "./hive_pred_model2.pkl")
+torch.save(net, "./hive_pred_model_L_"+str(hidden_dim1)+"_"+str(hidden_dim2)+".pkl")
 pred(net, test, test_features)
-pred_train(net,train,train_features,"train")
+
+# net = torch.load("./hive_pred_model_L.pkl")
+# pred_train(net,train,train_valid_features,"train_L")
